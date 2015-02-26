@@ -19,22 +19,41 @@ TODO
 
 \section{Background}
 
-The foundation of current work was established while author was setting up the infrastructure to deploy Ubuntu 12.04 LTS on the PC-s of educational institutions of Tallinn as part of the ongoing efforts of Tallinn Education Department to switch from proprietary solutions to open-source software.
+The foundation of current work was established while author was setting up
+the infrastructure to deploy Ubuntu 12.04 LTS on the PC-s of educational
+institutions of Tallinn as part of the ongoing efforts of Tallinn Education
+Department to switch from proprietary solutions to open-source software.
 
-Puppet was set up to manage Ubuntu workstations remotely. Local IT-support took the role of bootstrapping the machines and joining them to remote management server.
+Puppet was set up to manage Ubuntu workstations remotely. Local IT-support
+took the role of bootstrapping the machines and joining them to remote
+management server.
 
 
 \section{Specification}
 
-Customer A runs hundreds of embedded ARM computers for digital signage. Software is currently updated by mailing the customer an SD-card with updated software. The customer would prefer to update software and media over the air but the software update atomicity has to be guaranteed in order to avoid non-booting machines.
+Customer A runs hundreds of embedded ARM computers for digital signage.
+Software is currently updated by mailing the customer an SD-card with
+updated software. The customer would prefer to update software and
+media over the air but the software update atomicity has to be guaranteed
+in order to avoid non-booting machines.
 
-Customer B is about to deploy thousands of Ubuntu netbooks to be used as remote workstations around the globe. It vital to unroll security updates as soon as possible, but at the same time it's necessary to guarantee software update atomicity as the IT helpdesk is lacking in the remote locations where the machines are used.
+Customer B is about to deploy thousands of Ubuntu netbooks to be used as
+remote workstations around the globe. It vital to unroll security updates
+as soon as possible, but at the same time it's necessary to guarantee
+software update atomicity as the IT helpdesk is lacking in the remote
+locations where the machines are used.
 
-Customer C has around thousand PC-s that need to be converted to Ubuntu, but the budget is lacking and therefore manual labour has to be minimized. Glitch-free software update mechanism is crucial part of minimizing manual labour.
+Customer C has around thousand PC-s that need to be converted to Ubuntu,
+but the budget is lacking and therefore manual labour has to be minimized.
+Glitch-free software update mechanism is crucial part of minimizing manual
+labour.
 
 \section{Current approaches}
 
-There are various  currently used to manage Linux based workstations. In this chapter a background of different methods is outlined. Subsequently a specification is derived from the needs of customers of the author. 
+There are various  currently used to manage Linux based workstations.
+In this chapter a background of different methods is outlined.
+Subsequently a specification is derived from the needs of customers of
+the author. 
 
 
 \subsection{SaltStack}
@@ -42,9 +61,21 @@ TODO
 
 \subsection{Puppet and Foreman}
 
-Puppet is a remote management system which features its own declarative domain-specific language to describe the state of the configuration \footnote{http://puppetlabs.com/}. Puppet server also known as Puppetmaster hosts the configuration while managed machines run puppet agent which polls the puppetmaster at specified interval, usually 30 minutes. Taken actions are then reported back to the puppetmaster. Puppet agent and puppetmaster both are written in Ruby and released the latest versions are released under liberal Apache 2.0 license. Puppet can be used to manage both Linux and Windows servers and workstations as well.
+Puppet is a remote management system which features its own declarative
+domain-specific language to describe the state of the configuration
+\footnote{http://puppetlabs.com/}. Puppet server also known as Puppetmaster
+hosts the configuration while managed machines run puppet agent which polls
+the puppetmaster at specified interval, usually 30 minutes. Taken actions
+are then reported back to the puppetmaster. Puppet agent and puppetmaster
+both are written in Ruby and released the latest versions are released under
+liberal Apache 2.0 license. Puppet can be used to manage both Linux and
+Windows servers and workstations as well.
 
-Foreman is a complete lifecycle management software for physical and virtual servers. Foreman incorporates Puppet, a custom web interface and provisioning tools into single unified application. Even without using provisioning features Foreman makes one of the most feature-complete web interfaces for Puppet rivaling the Puppet Dashboard.
+Foreman is a complete lifecycle management software for physical and virtual
+servers. Foreman incorporates Puppet, a custom web interface and provisioning
+tools into single unified application. Even without using provisioning features
+Foreman makes one of the most feature-complete web interfaces for Puppet
+rivaling the Puppet Dashboard.
 
 \subsection{Chef}
 
@@ -52,39 +83,75 @@ Chef is infrastructure automation tool. Chef is written in Ruby and Erlang. Chef
 
 \subsection{Ansible}
 
-Ansible remote management software uses SSH to connect to the nodes which means there is no agent running on the managed machine, this however makes is slightly more complicated to use Ansible no manage machines behind NAT. Ansible is written in Python and it uses state-driven resource model written in YAML.
+Ansible remote management software uses SSH to connect to the nodes which
+means there is no agent running on the managed machine, this however makes
+it slightly more complicated to use Ansible no manage machines behind NAT.
+Ansible is written in Python and it uses state-driven resource 
+written in YAML.
 
 \subsection{Clonezilla}
 
-Clonezilla combines various open-source tools into a single cloning suite. Clonezilla uses partclone utilities  \footnote{http://partclone.org/} to identify and transfer only used blocks of various filesystems, most notably NTFS, ext4 and btrfs. Clonezilla can be used to grow fielsystems on the fly making it possible to use same prepared image for disks of various size. 
+Clonezilla combines various open-source tools into a single cloning suite.
+Clonezilla uses partclone utilities  \footnote{http://partclone.org/} to
+identify and transfer only used blocks of various filesystems, most notably
+NTFS, ext4 and btrfs. Clonezilla can be used to grow fielsystems on the fly
+making it possible to use same prepared image for disks of various size. 
 
 \subsection{Jails, OpenVZ and LXC}
 
-Jails have been available in FreeBSD since version 4.x. Jails use chroot syscall to substitute root filesystem of a process making it possible to create a restricted environment which is isolated from the rest of the operating system \footnote{https://www.freebsd.org/doc/en/books/handbook/jails.html}.
+Jails have been available in FreeBSD since version 4.x. Jails use chroot
+syscall to substitute root filesystem of a process making it possible to
+create a restricted environment which is isolated from the rest of the
+operating system
+\footnote{https://www.freebsd.org/doc/en/books/handbook/jails.html}.
 
-The main issue with jails is that dependencies of the target application have to be available in the jail root filesystem. For instance a Python application which has modules loaded before chroot operation could operate without any files in the chroot, but shell script which relies on several executables need to have those utilities available in chroot as well. With copy-on-write and de-duplicating filesystems the problem how ever becomes irrelevant as root filesystem of the chroots can be duplicated with no significant overhead.
+The main issue with jails is that dependencies of the target application have
+to be available in the jail root filesystem. For instance a Python application
+which has modules loaded before chroot operation could operate without any
+files in the chroot, but shell script which relies on several executables need
+to have those utilities available in chroot as well. With copy-on-write and de
+duplicating filesystems the problem how ever becomes irrelevant as root
+filesystem of the chroots can be duplicated with no significant overhead.
 
 
 \subsection{Docker and Rocket}
 
-Docker started off as a way to automate container deployment and configuration using containers and cgroups present in Linux kernel. As Docker started to add features that CoreOS developers deemed excessive an alternative project Rocket was founded \footnote{\url{http://www.theregister.co.uk/2014/12/03/coreos_rocket_deep_dive/}}.
+Docker started off as a way to automate container deployment and configuration
+using containers and cgroups present in Linux kernel. As Docker started to add
+features that CoreOS developers deemed excessive an alternative project Rocket
+was founded
+\footnote{\url{http://www.theregister.co.uk/2014/12/03/coreos_rocket_deep_dive/}}.
 
 \subsection{CoreOS and Ubuntu Core}
 
-CoreOS is a rearchitected Linux distribution which provides minimalist foundation to run containers.
+CoreOS \footnote{https://coreos.com/} is a rearchitected Linux distribution
+which provides minimalist foundation to run containers.
 It uses two-partition scheme to provide atomic updates of the root filesystem.
-The operating system runs off a read-only filesystem while the other one can be patched runtime. Reboot or \emph{kexec} can be used to boot into the updated system.
-\footnote{https://coreos.com/}
+The operating system runs off a read-only filesystem while the other one
+can be patched runtime. Reboot or \emph{kexec} can be used to boot into
+the updated system.
 
-Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things and as a container platform. Ubuntu Core introduced root filesystem transactional updates to Ubuntu using Snappy \footnote{http://developer.ubuntu.com/en/snappy/}. Ubuntu Core is designed to run Docker applications and can be used. Snappy is also plays important role in Ubuntu Phone ecosystem. Snappy uses OverlayFS (?) to implement transactional updates 
 
-\subsection{apt-btrfs-snapshot}
+Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things and as a
+container platform. Ubuntu Core introduced root filesystem transactional
+updates to Ubuntu using Snappy
+\footnote{http://developer.ubuntu.com/en/snappy/}.
+Ubuntu Core is designed to run Docker applications and can be used.
+Snappy is also plays important role in Ubuntu Phone ecosystem.
+Snappy uses OverlayFS (?) to implement transactional updates 
 
-TODO
+\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
 
-\subsection{yum-plugin-fs-snapshot}
+In Ubuntu package repositories there is available \emph{apt-btrfs-snapshot}
+\footnote{https://launchpad.net/apt-btrfs-snapshot} package,
+which creates snapshot of the root filesystem before every
+\emph{apt-get} operation.
 
-TODO
+\emph{yum-plugin-fs-snapshot}
+\footnote{\url{http://man7.org/linux/man-pages/man1/yum-fs-snapshot.1.html}}
+is the corresponding package for Fedora and
+Red Hat based distributions.
+
 
 \subsection{OverlayFS}
 
@@ -93,31 +160,71 @@ OpenWrt uses OverlayFS to implement writable jffs2 layer on top of read-onlySqua
 
 \subsection{LVM, mdadm and dmraid}
 
-Ext4 has been primary filesystem for Linux based workstations and servers for a while. It provides filesystem primitives such as files, directories, permissions and timestamping. In order to add redundancy either software RAID or logical volume management (LVM) can be used.
+Ext4 has been primary filesystem for Linux based workstations and servers for
+a while. It provides filesystem primitives such as files, directories,
+permissions and timestamping. In order to add redundancy either software RAID
+or logical volume management (LVM) can be used.
 
-Software RAID is implemented in Linux by means of \emph{mdadm}. Software RAID can be used to build RAID1, RAID0, RAID10/01, RAID5 or RAID6 arrays without dedicated RAID controller which could also impose a vendor lock-in.
+Software RAID is implemented in Linux by means of \emph{mdadm}. Software RAID
+can be used to build RAID1, RAID0, RAID10/01, RAID5 or RAID6 arrays without
+dedicated RAID controller which could also impose a vendor lock-in.
 
-LVM enables pooling of drives, mirroring and snapshotting by adding an abstraction layer on top of physcal disks. Any filesystem that can be deployed on physical disk can also be deployed on top of LVM's logical volume. The kernel takes care of mapping logical addresses to corresponding disk's physical address. The snapshotting feature of LVM however has been claimed to be buggy \footnote{http://lwn.net/Articles/522073/}.
+LVM enables pooling of drives, mirroring and snapshotting by adding an
+abstraction layer on top of physcal disks. Any filesystem that can be deployed
+on physical disk can also be deployed on top of LVM's logical volume. The
+kernel takes care of mapping logical addresses to corresponding disk's physical
+address. The snapshotting feature of LVM however has been claimed to be buggy
+\footnote{http://lwn.net/Articles/522073/}.
 
 \subsection{Btrfs and ZFS}
 
-Btrfs and ZFS both are modern copy on write filesystem for Linux which also fills in the role of volume manager. Btrfs has been claimed to be unstable but the situation has improved significantly over the past year or two. 
+Btrfs and ZFS both are modern copy on write filesystem for Linux which also
+fills in the role of volume manager. Btrfs has been claimed to be unstable but
+the situation has improved significantly over the past year or two. 
 
-During snapshot send/receive an optimal parent snapshot is identified and that is used as basis for the differential snapshot. The btrfs stream contains filesystem operations that are indended to be replayed on a clone of the parent subvolume: create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink, \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file, close file, write to file, set/remove extended attributes, truncate file, \emph{chmod}, \emph{chown} \footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
+During snapshot send/receive an optimal parent snapshot is identified and that
+is used as basis for the differential snapshot. The btrfs stream contains
+filesystem operations that are indended to be replayed on a clone of the
+parent subvolume: create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo},
+symlink, \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
+close file, write to file, set/remove extended attributes, truncate file,
+\emph{chmod}, \emph{chown}
+\footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
 
-Debian has supported btrfs since Squeeze and has improved support since then \footnote{https://wiki.debian.org/Btrfs}.  
+Debian has supported btrfs since Squeeze and has improved support since then
+\footnote{https://wiki.debian.org/Btrfs}.  
 
-Facebook has been testing btrfs in production since the April of 2014 \footnote{\url{https://btrfs.wiki.kernel.org/index.php/Production_Users}}. Chris Mason, a lead developer of Btrfs joined Facebook in the end of 2013 \footnote{\url{http://article.gmane.org/gmane.comp.file-systems.btrfs/30420}}. RAID5/6 support and improved data scrubbing for Btrfs was released with Linux 3.19 \footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
-
+Facebook has been testing btrfs in production since the April of 2014
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/Production_Users}}.
+Chris Mason, a lead developer of Btrfs joined Facebook in the end of 2013
+\footnote{\url{http://article.gmane.org/gmane.comp.file-systems.btrfs/30420}}.
+RAID5/6 support and improved data scrubbing for Btrfs was released with Linux
+3.19 \footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
 
 \subsection{OpenWrt}
-OpenWrt is a Linux distribution for embedded devices which attempts to provide writable filesystem and package management \footnote{https://openwrt.org/}. OpenWrt supported hardware list mainly targets routers, but other devices are listed as well \footnote{http://wiki.openwrt.org/toh/}. OpenWrt can be used to extend lifetime of equipment that otherwise would be largely unmaintained by the manufacturer.
+OpenWrt is a Linux distribution for embedded devices which attempts to provide
+writable filesystem and package management \footnote{https://openwrt.org/}.
+OpenWrt supported hardware list mainly targets routers, but other devices are
+listed as well \footnote{http://wiki.openwrt.org/toh/}. OpenWrt can be used to
+extend lifetime of equipment that otherwise would be largely unmaintained by the
+manufacturer.
 
-Most high-end consumer grade routeres employ 8MB NAND Flash chip which is directly connected to the SoC without controller \footnote{http://wiki.openwrt.org/doc/techref/flash.layout}. The Flash storage is usually partitioned at least as 3 slices: bootloader, read-only root filesystem, read-write overlay.
+Most high-end consumer grade routeres employ 8MB NAND Flash chip which is
+directly connected to the SoC without controller
+\footnote{http://wiki.openwrt.org/doc/techref/flash.layout}.
+The Flash storage is usually partitioned at least as 3 slices:
+bootloader, read-only root filesystem, read-write overlay.
 
-The read-only root filesystem contains SquashFS \footnote{http://squashfs.sourceforge.net/} which is highly-efficient compressed read-only filesystem that support variety of compression algorithms. The read-write overlay partition is formatted as JFFS2 (journalling flash filesystem).
+The read-only root filesystem contains SquashFS
+\footnote{http://squashfs.sourceforge.net/}
+which is highly-efficient compressed read-only filesystem that support variety
+of compression The read-write overlay partition is formatted as JFFS2
+(journalling flash filesystem).
 
-The first method splits internal storage to two partitions: SquashFS filesystem which contains read-only firmware and JFFS2 formatted partition which is laid over the SquashFS filesystem using OverlayFS. This method makes it possible to do factory reset simply by formatting the JFFS2 partition.
+The first method splits internal storage to two partitions: SquashFS
+filesystem which contains read-only firmware and JFFS2 formatted partition
+which is laid over the SquashFS filesystem using OverlayFS. This method makes
+it possible to do factory reset simply by formatting the JFFS2 partition.
 
 \subsection{OpenStack}
 
@@ -125,21 +232,79 @@ TODO
 
 \section{Analysis}
 
-Ubuntu package management fits most scenarios, but there are some rough edges: package list corruption, faulty scripting, bandwidth overhead etc. Debian community has been working hard to provide differential updates for the packages, but as of February 2015 the efforts have proven fruitless. Fedora community has however successfully deployed differential pacakges, thus reducing the amount of data needed to be transferred during an pacakge update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern.
+Ubuntu package management fits most scenarios, but there are some rough edges:
+package list corruption
+\footnote{http://askubuntu.com/questions/532200/14-04-lts-apt-get-segfault},
+faulty scripting in packages
+\footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367#post5216367}},
+bandwidth overhead etc.
 
-Puppet, SaltStack, Chef, Ansible and other traditional configuration management fit best the scenario where each node has slightly different configuration and it makes sense to keep them separate. However provisioning very similar nodes with for instance Foreman has obvious overhead - each node has to fetch updated packages independently from the same APT repositories, same has to be done for application software.
+Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
+have proven to be especially troublesome due to the fact that system libraries
+and files are updated and interrupted release upgrade may leave system
+in an unusable state.
+
+Debian community has been working hard to provide differential updates for
+the packages, but as of February 2015 the efforts have proven fruitless.
+Differential updates are applied for package lists
+\footnote{\url{https://www.debian-administration.org/article/439/Avoiding_slow_package_updates_with_package_diffs}},
+but binary diffs for packages have not implemented yet.
+Fedora community has however successfully deployed differential pacakges
+\footnote{http://fedoraproject.org/wiki/Features/Presto},
+thus reducing the amount of data needed to be transferred during an pacakge update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern, especially for low-bandwidth links.
+
+Puppet, SaltStack, Chef, Ansible and other traditional configuration management
+fit best the scenario where each node has slightly different configuration and
+it makes sense to keep them separate. However provisioning very similar nodes
+with for instance Foreman has obvious overhead - each node has to fetch updated
+packages independently from the same APT repositories, same has to be done for
+application software.
 
 \section{Prototype}
 
-Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility operating system. With Debian and Ubuntu the resulting PXE bootable image would have exceeded 100MB. As of February of 2015 the CoreOS image suffers similar issue - \emph{vmlinuz} \footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe.vmlinuz}} and \emph{initrd} \footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe_image.cpio.gz}} files required to boot over PXE are correspondingly 24MB and 117MB. With Gentoo significant tweaking is required, because Gentoo is mainly targeted for power users.
+Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
+operating system. With Debian and Ubuntu the resulting PXE bootable image
+would have exceeded 100MB.
+As of February of 2015 the CoreOS image suffers similar issue -
+\emph{vmlinuz}
+\footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe.vmlinuz}}
+and
+\emph{initrd}
+\footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe_image.cpio.gz}}
+files required to boot over PXE are correspondingly 24MB and 117MB.
+With Gentoo significant tweaking is required, because Gentoo is
+mainly targeted for power users.
 
-Using Python to build pseudo-graphic menu-driven user interface was evaluated and deemed not necessary for the goal as Python runtime and dependant libraries add about 10MB to the resulting image. In addition to that \emph{parted} Python bindings were unavailable in Buildroot. 
+Using Python to build pseudo-graphic menu-driven user interface was
+evaluated and deemed not necessary for the goal as Python runtime and
+dependant libraries add about 10MB to the resulting image.
+In addition to that \emph{parted} Python bindings were unavailable
+in Buildroot package selection.
 
-Buildroot was eventually used to generate an compact 10MB all-in-one PXE-bootable image. Utilities \emph{dialog} in conjunction with \emph{curl}, \emph{jq} and others were used to build the user-interface and Bash was used to program the user-interface logic. The security model for the initial deployment phase could be improved as only method of verification of the source is the certificate authority chain verified by \emph{curl} during the btrfs snapshot retrieval.
+Buildroot was eventually used to generate an compact 10MB all-in-one
+PXE-bootable image. Utilities \emph{dialog} in conjunction with
+\emph{curl}, \emph{jq} and others were used to build the user-interface
+and Bash was used to program the user-interface logic.
+The security model for the initial deployment phase could be improved
+as only method of verification of the source is the certificate
+authority chain verified by \emph{curl} during the btrfs snapshot
+retrieval.
 
-LXC containers are used to bootstrap the template for provisioning. With btrfs backing store on top of a btrfs filesystem the container can be saved in an isolated btrfs subvolume which makes it easy to snapshot the container. Within the container \emph{puppet apply} and similar methods can be used to take advantage of already existing configuration management know-how. Otherwise traditional manual labour can be employed to set up the template. During the release phase the LXC container is stopped, pre-release scripts are executed to clean up cached packages and temporary files. Then a read-only btrfs snapshot is generated from the container root filesystem. At this point new snapshot becomes available for other nodes.
+LXC containers are used to bootstrap the template for provisioning.
+With btrfs backing store on top of a btrfs filesystem the container
+can be saved in an isolated btrfs subvolume which makes it easy to
+snapshot the container.
+Within the container \emph{puppet apply} and similar methods can be used
+to take advantage of already existing configuration management know-how.
+Otherwise traditional manual labour can be employed to set up the template.
+During the release phase the LXC container is stopped, pre-release scripts
+are executed to clean up package cache and temporary files.
+Then a read-only btrfs snapshot is generated from the container root filesystem.
+At this point new snapshot becomes available for other nodes.
 
-For running nodes a DBus service was written to poll the snapshot server for updates and another DBus service was written in Python to notify user about available updates.
+For running nodes a DBus service was written to poll the snapshot server
+for updates and another DBus service was written in Python to notify user
+about available updates.
 
 
 \section{Conclusion}

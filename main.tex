@@ -8,6 +8,7 @@
 \usepackage{natbib}
 \usepackage{graphicx}
 \usepackage{url}
+\usepackage{tikz}
 
 \begin{document}
 
@@ -94,7 +95,7 @@ written in YAML.
 Clonezilla combines various open-source tools into a single cloning suite.
 Clonezilla uses partclone utilities  \footnote{http://partclone.org/} to
 identify and transfer only used blocks of various filesystems, most notably
-NTFS, ext4 and btrfs. Clonezilla can be used to grow fielsystems on the fly
+NTFS, ext4 and Btrfs. Clonezilla can be used to grow fielsystems on the fly
 making it possible to use same prepared image for disks of various size. 
 
 \subsection{Jails, OpenVZ and LXC}
@@ -131,7 +132,6 @@ The operating system runs off a read-only filesystem while the other one
 can be patched runtime. Reboot or \emph{kexec} can be used to boot into
 the updated system.
 
-
 Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things and as a
 container platform. Ubuntu Core introduced root filesystem transactional
 updates to Ubuntu using Snappy
@@ -139,18 +139,6 @@ updates to Ubuntu using Snappy
 Ubuntu Core is designed to run Docker applications and can be used.
 Snappy is also plays important role in Ubuntu Phone ecosystem.
 Snappy uses OverlayFS (?) to implement transactional updates 
-
-\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
-
-In Ubuntu package repositories there is available \emph{apt-btrfs-snapshot}
-\footnote{https://launchpad.net/apt-btrfs-snapshot} package,
-which creates snapshot of the root filesystem before every
-\emph{apt-get} operation.
-
-\emph{yum-plugin-fs-snapshot}
-\footnote{\url{http://man7.org/linux/man-pages/man1/yum-fs-snapshot.1.html}}
-is the corresponding package for Fedora and
-Red Hat based distributions.
 
 
 \subsection{OverlayFS}
@@ -183,7 +171,7 @@ fills in the role of volume manager. Btrfs has been claimed to be unstable but
 the situation has improved significantly over the past year or two. 
 
 During snapshot send/receive an optimal parent snapshot is identified and that
-is used as basis for the differential snapshot. The btrfs stream contains
+is used as basis for the differential snapshot. The Btrfs stream contains
 filesystem operations that are indended to be replayed on a clone of the
 parent subvolume: create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo},
 symlink, \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
@@ -191,15 +179,43 @@ close file, write to file, set/remove extended attributes, truncate file,
 \emph{chmod}, \emph{chown}
 \footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
 
-Debian has supported btrfs since Squeeze and has improved support since then
+Debian has supported Btrfs since Squeeze and has improved support since then
 \footnote{https://wiki.debian.org/Btrfs}.  
 
-Facebook has been testing btrfs in production since the April of 2014
+Facebook has been testing Btrfs in production since the April of 2014
 \footnote{\url{https://btrfs.wiki.kernel.org/index.php/Production_Users}}.
 Chris Mason, a lead developer of Btrfs joined Facebook in the end of 2013
 \footnote{\url{http://article.gmane.org/gmane.comp.file-systems.btrfs/30420}}.
 RAID5/6 support and improved data scrubbing for Btrfs was released with Linux
 3.19 \footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
+
+
+\subsection{FreeNAS, Rockstor and OpenMediaVault}
+
+FreeNAS is a FreeBSD \footnote{http://www.freenas.org/}
+based distribution which builds a complete NAS solution on top of
+ZFS filesystem and web interface.
+Rockstor \footnote{http://rockstor.com/}
+is a complementary CentOS based solution that uses Btrfs instead
+of ZFS filesystem.
+OpenMediaVault provides similar functionality using Debian instead of CentOS
+\footnote{http://www.openmediavault.org/}.
+All three of them support SMB/CIFS (Windows file shares),
+NFS (UNIX file shares) and filesystem aided snapshots.
+
+
+\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
+
+In Ubuntu package repositories there is available \emph{apt-btrfs-snapshot}
+\footnote{https://launchpad.net/apt-btrfs-snapshot} package,
+which creates snapshot of the root filesystem before every
+\emph{apt-get} operation.
+
+\emph{yum-plugin-fs-snapshot}
+\footnote{\url{http://man7.org/linux/man-pages/man1/yum-fs-snapshot.1.html}}
+is the corresponding package for Fedora and
+Red Hat based distributions.
+
 
 \subsection{OpenWrt}
 OpenWrt is a Linux distribution for embedded devices which attempts to provide
@@ -287,31 +303,84 @@ PXE-bootable image. Utilities \emph{dialog} in conjunction with
 and Bash was used to program the user-interface logic.
 The security model for the initial deployment phase could be improved
 as only method of verification of the source is the certificate
-authority chain verified by \emph{curl} during the btrfs snapshot
+authority chain verified by \emph{curl} during the Btrfs snapshot
 retrieval.
 
 LXC containers are used to bootstrap the template for provisioning.
-With btrfs backing store on top of a btrfs filesystem the container
-can be saved in an isolated btrfs subvolume which makes it easy to
+With Btrfs backing store on top of a Btrfs filesystem the container
+can be saved in an isolated Btrfs subvolume which makes it easy to
 snapshot the container.
 Within the container \emph{puppet apply} and similar methods can be used
 to take advantage of already existing configuration management know-how.
 Otherwise traditional manual labour can be employed to set up the template.
 During the release phase the LXC container is stopped, pre-release scripts
 are executed to clean up package cache and temporary files.
-Then a read-only btrfs snapshot is generated from the container root filesystem.
+Then a read-only Btrfs snapshot is generated from the container root filesystem.
 At this point new snapshot becomes available for other nodes.
 
 For running nodes a DBus service was written to poll the snapshot server
 for updates and another DBus service was written in Python to notify user
 about available updates.
 
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{workflow.tex}}
+\caption{Workflow for btrfs snapshot based software deployment}
+\label{fig:digraph}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{traditional-partitioning.tex}}
+\caption{Traditional partitioning}
+\label{fig:digraph}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{pooled-partitioning.tex}}
+\caption{Pooled partitioning}
+\label{fig:digraph}
+\end{figure}
+
 
 \section{Conclusion}
 
 TODO
 
+
 \section{Future work}
+
+\subsection{Btrfs and BitTorrent integration}
+
+Btrfs uses crc32c for checksumming and support for alternative checksum algorithms is planned.
+Current on-disk format supports up to 256-bit hash checksum per
+metadata block and arbitrary count of blocks for per-block checksums.
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#What_checksum_function_does_Btrfs_use.3F}}
+As of November 2013 Btrfs defaults to 16KB or page size whichever
+is larger.
+On most Linux workstation page size is set to 4KB, thus 16KB block
+size takes precedence.
+\footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}
+
+BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
+BitTorrent protocol does not specify minimal piece length
+\footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
+but for example libtorrent imposes restriction of having piece length
+a multiple of 16KB
+\footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html#id5}}.
+
+As online deduplication is in works for Btrfs it makes sense to combine the two,
+implementing additional \emph{ioctl} for Btrfs in order to perform block lookup
+by checksum is trivial task.
+This could make it possible to implement high-performance BitTorrent seedbox
+which takes advantage of Btrfs metadata.
+
+\subsection{Alternative filesystem layouts}
+
+Lennart Poettering, an controversial Free Software developer has outlined a method
+\footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}
+of building Linux based systems using Btrfs snapshots.
 
 \bibliographystyle{plain}
 \bibliography{references}

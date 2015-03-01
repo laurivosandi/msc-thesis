@@ -267,6 +267,28 @@ upgrade usually renders device unfit for use. This is also known as
 \emph{bricking} in embedded developer jargon.
 
 
+\subsection{Android}
+
+Android ROM images are typically distributed as zip files which contain 
+binary blobs for modem and bootloader in addition to snapshots of the
+file primary filesystems of Android: boot, cache, recovery, system and userdata
+\footnote{https://dl.google.com/dl/android/aosp/shamu-lrx22c-factory-ff173fc6.tgz}.
+Differential images are also available, in that case zip file contains
+directory tree of files intended to be overwritten or added to the original
+root filesystem and post-installation scripts which correct the file permissions
+\footnote{http://gapps.itvends.com/gapps-lp-20141212-signed.zip}.
+
+ROM manager such as ClockworkMod \footnote{https://www.clockworkmod.com/} or
+TWRP \footnote{http://teamw.in/project/twrp2} has to be used to install or patch
+third-party ROM-s.
+An alternative Fastboot method is also present in most
+Android devices and it can be used to directly write raw filesystem images and
+unlock the device
+\footnote{\url{http://wiki.cyanogenmod.org/w/Doc:_fastboot_intro}}.
+
+
+
+
 \subsection{OpenStack}
 
 OpenStack is a free and open-source cloud computing software platform
@@ -414,6 +436,14 @@ which takes advantage of Btrfs metadata.
 Lennart Poettering, an controversial Free Software developer has outlined a method
 \footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}
 of building Linux based systems using Btrfs snapshots.
+The new layout requires significant effort from operating system distributors,
+software suite vendors but promises significant save of effort on testing
+software on Linux based systems.
+
+Debian has put significant effort into making Debian package builds reproducible
+\footnote{https://wiki.debian.org/ReproducibleBuilds}.
+
+
 
 \bibliographystyle{plain}
 \bibliography{references}

@@ -43,6 +43,8 @@ remote workstations around the globe. It vital to unroll security updates
 as soon as possible, but at the same time it's necessary to guarantee
 software update atomicity as the IT helpdesk is lacking in the remote
 locations where the machines are used.
+The solution has to be installable at customer premises and it
+must make use of standard and recognized security methods.
 
 Customer C has around thousand PC-s that need to be converted to Ubuntu,
 but the budget is lacking and therefore manual labour has to be minimized.
@@ -131,9 +133,11 @@ It uses two-partition scheme to provide atomic updates of the root filesystem.
 The operating system runs off a read-only filesystem while the other one
 can be patched runtime. Reboot or \emph{kexec} can be used to boot into
 the updated system.
+This prevents rendering device unbootable due to interrupted upgrade.
 
 Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things and as a
-container platform. Ubuntu Core introduced root filesystem transactional
+container platform.
+Ubuntu Core introduced root filesystem transactional
 updates to Ubuntu using Snappy
 \footnote{http://developer.ubuntu.com/en/snappy/}.
 Ubuntu Core is designed to run Docker applications and can be used.
@@ -144,7 +148,8 @@ Snappy uses OverlayFS (?) to implement transactional updates
 \subsection{OverlayFS}
 
 OverlayFS is a feature introduced in Linux 3.18 which makes it possible to merge contents of two separate mountpoints on the fly.
-OpenWrt uses OverlayFS to implement writable jffs2 layer on top of read-onlySquashFS filesystem \footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
+OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of read-only SquashFS filesystem
+\footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
 
 \subsection{LVM, mdadm and dmraid}
 
@@ -216,14 +221,32 @@ which creates snapshot of the root filesystem before every
 is the corresponding package for Fedora and
 Red Hat based distributions.
 
+These approaches make it possible to boot into previous snapshots
+in case there are issues with the updated packages.
 
-\subsection{OpenWrt}
-OpenWrt is a Linux distribution for embedded devices which attempts to provide
-writable filesystem and package management \footnote{https://openwrt.org/}.
+
+\subsection{OpenWrt and DD-WRT}
+
+Most Linux based open-source router firmwares originate from Linksys WRT54G
+wireless router.
+Initially Cisco did not provide source code for the router as GPL mandates.
+Between 2003-2008 Free Software Foundation attempted to work with Cisco
+to work out issues, but as Cisco continued to release new devices with similar
+issues Free Software Foundation eventually sued Cisco for malpractice.
+After the lawsuit Cisco complied and has been releasing firmware sources for
+all of their devices which make use of software released under GPL licenses.
+\footnote{http://www.fsf.org/licensing/2008-12-cisco-complaint}.
+Linksys WRT54G sources were basis for various Linux distributions for routers such as
+DD-WRT \footnote{http://www.dd-wrt.com/},
+Tomato \footnote{http://www.polarcloud.com/tomato}
+OpenWrt \footnote{https://openwrt.org/}.
+
+OpenWrt as we know it today is a Linux distribution for embedded devices
+which attempts to provide writable filesystem and package management.
 OpenWrt supported hardware list mainly targets routers, but other devices are
 listed as well \footnote{http://wiki.openwrt.org/toh/}. OpenWrt can be used to
-extend lifetime of equipment that otherwise would be largely unmaintained by the
-manufacturer.
+extend lifetime of equipment that otherwise would be largely obsolete due
+to unmaintained software from hardware manufacturer.
 
 Most high-end consumer grade routeres employ 8MB NAND Flash chip which is
 directly connected to the SoC without controller
@@ -237,14 +260,24 @@ which is highly-efficient compressed read-only filesystem that support variety
 of compression The read-write overlay partition is formatted as JFFS2
 (journalling flash filesystem).
 
-The first method splits internal storage to two partitions: SquashFS
-filesystem which contains read-only firmware and JFFS2 formatted partition
-which is laid over the SquashFS filesystem using OverlayFS. This method makes
-it possible to do factory reset simply by formatting the JFFS2 partition.
+This method makes it possible to: perform factory reset simply by formatting
+the JFFS2 partition and upgrading firmware by overwriting SquashFS partition.
+Due to lack of redundancy in consumer-grade routers an interrupted firmware
+upgrade usually renders device unfit for use. This is also known as
+\emph{bricking} in embedded developer jargon.
+
 
 \subsection{OpenStack}
 
-TODO
+OpenStack is a free and open-source cloud computing software platform
+which is composed of several components of which most noteworthy for current work are:
+Glance image service, Ironic bare metal provisioning,
+Swift object storage and Cinder block storage.
+Glance provides discovery, registery and retrieval services of virtual machine images
+\footnote{http://docs.openstack.org/developer/glance/}.
+Glance BitTorrent delivery enabled BitTorrent support for transferring the images
+\footnote{https://blueprints.launchpad.net/glance/+spec/glance-bittorrent-delivery}.
+
 
 \section{Analysis}
 

@@ -1,0 +1,141 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Empowering local IT with open-source tools}
+\author{Lauri Võsandi}
+\date{January 2015}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{tikz}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This minor thesis complements the major thesis
+titled \emph{Efficient and Reliable Filesystem Snapshot Distribution}.
+
+
+\section{Background}
+
+IT is essential infrastructure for every country, especially developing countries.
+The harsh reality is that western IT corporations often offer products
+and services for developing countries at non-sustainable prices in order
+to gain userbase. Once the county has reached certain living standard the
+pricing is adjusted accordingly.
+
+
+As the users have been learning to use particular product,
+reluctance to switch is increased due to training costs,
+user fustration etc.
+Most often organizations submit to paying licensing fees at significantly
+higher prices due to users protesting against change.
+
+Starting from the end of 2013 Microsoft does not consider Estonia a developing country
+anymore. The implication of the change was that the Microsoft Windows and Microsoft
+Office license fees would rise from current 6 EUR to 60 EUR per month per machine.
+According to Ernst \& Young analysis Tallinn could save 490 000 EUR within 5 years
+if they would give up Microsoft Office now. Replacing Windows with Linux would
+save additional 210 000 EUR. This was the main motivation for Tallinn Education Department to try out alternatives. As change from Microsoft Office to LibreOffice was certain, replacing operating system was more questionable.
+
+In March of 2014 they decided to pilot Linux in 5 educational institutions: Mustamäe Upper Secondary School [2], Tallinn Mahtra Primary School [3], Merivälja school [4], Tallinn Mesimummu kindergarten [5] and Tallinn Tammetõru kindergarten [6]. Procurement competition was won by Arvuti Traumapunkt OÜ [7] and Silver Püvi hired me to take care of setting up infrastructure servers. Most of the work so far has been done remotely in conjunction with local IT-support. Before the migration I had around 7 years of open-source hacking experience, however I never had experience with remote management or centralized authentication.
+
+\section{Examples}
+
+\subsection{Wireless networks}
+
+With the introduction of various e-study systems the requirements for
+wireless networks have increased significantly.
+Estwin project started in 2006 (?) promised to establish fibre links within 1.5km range
+from each Estonian household.
+Estonian Educational Network will be covering the last mile for each school of Estonia
+by 2016.
+This means by next year each Estonian school is about to have gigabit link to the premises.
+
+In Estonia western vendors offer wireless coverage for educational institutions
+at varying prices.
+As organizations don't know what they need they usually get enterprise solution which
+is overpriced and exceeds their requirements.
+
+Youtube states
+that for 720p video stream 2.5Mbps downlink is required.
+The average sized classroom houses approximately 20-30 students.
+This is yields an upper bound of 75MBps per classroom.
+As 5GHz poorly penetrates concrete wall it makes sense to place
+access point in each room.
+It's also a good idea to provide public and protected networks
+simultaneously.
+
+To reiterate the requirements for wireless network:
+
+\begin{itemize}
+
+  \item{5GHz support for modern mobile devices}
+  \item{2.4GHz support for legacy devices}
+  \item{802.11n support for better throughput}
+  \item{Roaming support}
+  \item{Multi-SSID support}
+  \item{Central configuration management}
+  \item{WPA2 Enterprise support for eduroam}
+\end{itemize}
+Enterprise grade hardware which conforms to the requirements:
+
+* Ruckus ... 500 EUR
+
+
+Considering that all the mentioned vendors impose vendor lock-ins
+(closed source firmware, firmware signature checks, etc)
+it might not be a good idea to have the software of the hardware vendor.
+In fact most wireless hardware vendors are using open-source, but
+fail to adhere to General Public License conditions which should grant
+the hardware user the freedom to modify the software.
+Cisco \footnote{http://www.fsf.org/news/2008-12-cisco-suit}
+Mikrotik \footnote{https://www.mail-archive.com/legal@lists.gpl-violations.org/msg00335.html}
+
+
+For example Colubris was acquired by Hewlett Packard in 2008 and many products
+sold by Colubris are unsupported and customers are left with
+deprecated hardware.
+
+After analyzing various hardware that is supported by OpenWrt
+a decision was made in favour of TP-Link WDR4300.
+This particular router
+contains Atheros system on chip and Atheros wireless chips
+which are also used in enterprise products.
+Atheros wireless chips support 802.11abgn, multiple SSID-s,
+RADIUS authentication and much more.
+
+Using OpenWrt a completely binary-blob free firmware can be built.
+The lack of blobs has it's merits - latest Linux kernel can be used
+and all security updates are available significantly earlier.
+Vendor back-doors can also be mitigated using customized firmware.
+
+
+In Estonia western vendors offer wireless coverage for educational institutions
+at varying prices.
+As organizations don't know what they need they usually get enterprise solution which
+is overpriced and exceeds their requirements.
+As an example 46000 EUR price was offered to cover 7-floor building.
+
+Using common sense, open-source tools and open-source friendly hardware
+sustainable and reasonably priced solutions can be built.
+WDR4300 can be obtained at sub 60 EUR pricetag.
+A regular PC can be used for routing purposes
+
+
+
+
+
+
+\section{Conclusion}
+
+
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

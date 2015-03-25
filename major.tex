@@ -1,10 +1,8 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
-
 \title{Efficient and Reliable Filesystem Snapshot Distribution}
 \author{Lauri Võsandi}
 \date{January 2015}
-
 \usepackage{natbib}
 \usepackage{graphicx}
 \usepackage{url}
@@ -14,11 +12,21 @@
 
 \maketitle
 
-\section{Introduction}
+
+\begin{abstract}
 
 TODO
 
-\section{Background}
+\end{abstract}
+
+
+
+
+
+\chapter{Introduction}
+
+
+\section{Motivation}
 
 The foundation of current work was established while author was setting up
 the infrastructure to deploy Ubuntu 12.04 LTS on the PC-s of educational
@@ -30,8 +38,6 @@ took the role of bootstrapping the machines and joining them to remote
 management server.
 
 
-\section{Specification}
-
 Customer A runs hundreds of embedded ARM computers for digital signage.
 Software is currently updated by mailing the customer an SD-card with
 updated software. The customer would prefer to update software and
@@ -39,7 +45,7 @@ media over the air but the software update atomicity has to be guaranteed
 in order to avoid non-booting machines.
 
 Customer B is about to deploy thousands of Ubuntu netbooks to be used as
-remote workstations around the globe. It vital to unroll security updates
+remote workstations around the globe. It is vital to unroll security updates
 as soon as possible, but at the same time it's necessary to guarantee
 software update atomicity as the IT helpdesk is lacking in the remote
 locations where the machines are used.
@@ -50,6 +56,11 @@ Customer C has around thousand PC-s that need to be converted to Ubuntu,
 but the budget is lacking and therefore manual labour has to be minimized.
 Glitch-free software update mechanism is crucial part of minimizing manual
 labour.
+
+\section{Contributions}
+
+The work produced a novel method of deploying and maintaining Linux
+based workstations in an guaranteed and secure manner.
 
 \section{Current approaches}
 
@@ -94,11 +105,24 @@ written in YAML.
 
 \subsection{Clonezilla}
 
-Clonezilla combines various open-source tools into a single cloning suite.
-Clonezilla uses partclone utilities  \footnote{http://partclone.org/} to
+Clonezilla \footnote{http://clonezilla.org/}
+combines various open-source tools into a single cloning suite.
+Clonezilla uses partclone utilities \footnote{http://partclone.org/} to
 identify and transfer only used blocks of various filesystems, most notably
-NTFS, ext4 and Btrfs. Clonezilla can be used to grow fielsystems on the fly
-making it possible to use same prepared image for disks of various size. 
+NTFS, ext4 and Btrfs. Clonezilla can be used to grow filesystems on the fly
+making it possible to use same prepared image for disks of various size.
+
+Symantec Ghost, previously known as Norton Ghost is a corresponding commericial
+product currently available on the market
+\footnote{http://www.symantec.com/ghost-solution-suite/}
+offered by Symantec Corporation.
+Acronis True Image
+\footnote{http://www.acronis.com/en-eu/personal/pc-backup/}
+is another similar product which supports Windows
+and Mac OS X operating systems by Acronis International GmbH.
+
+The fact that machines need to be taken offline is the main
+drawback of classic disk cloning methods. 
 
 \subsection{Jails, OpenVZ and LXC}
 
@@ -225,6 +249,15 @@ These approaches make it possible to boot into previous snapshots
 in case there are issues with the updated packages.
 
 
+\subsection{rsync and rsnapshot}
+
+rsync is an open source utility designed for fast incremental file transfer.
+It is most commonly invoked with archiving flag (-a) which retains permissions, ownership, timestamps and symlinks. In that case files are transferred only if
+modified timestamp or file length differs.
+
+rsnapshot is an utility that takes advantage of hardlinking functionality of ext4 and other similar filesystems. By creating a clone of a directory tree using hardlinks no extra disk space is consumed. Applying classical rsync on top of the clone only increments by the disk usage of changed files.
+
+
 \subsection{OpenWrt and DD-WRT}
 
 Most Linux based open-source router firmwares originate from Linksys WRT54G
@@ -285,6 +318,8 @@ An alternative Fastboot method is also present in most
 Android devices and it can be used to directly write raw filesystem images and
 unlock the device
 \footnote{\url{http://wiki.cyanogenmod.org/w/Doc:_fastboot_intro}}.
+As Android is open-source vendors tend to customize various aspects of the
+software update process.
 
 
 
@@ -301,7 +336,7 @@ Glance BitTorrent delivery enabled BitTorrent support for transferring the image
 \footnote{https://blueprints.launchpad.net/glance/+spec/glance-bittorrent-delivery}.
 
 
-\section{Analysis}
+\chapter{Analysis}
 
 Ubuntu package management fits most scenarios, but there are some rough edges:
 package list corruption
@@ -331,7 +366,26 @@ with for instance Foreman has obvious overhead - each node has to fetch updated
 packages independently from the same APT repositories, same has to be done for
 application software.
 
-\section{Prototype}
+\chapter{Prototype}
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{butterknife-usecase-http.tex}}
+\caption{Deployment over HTTP}
+\label{fig:digraph}
+\end{figure}
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{butterknife-usecase-multicast.tex}}
+\caption{Deployment over multicast}
+\label{fig:digraph}
+\end{figure}
+
+
+
 
 Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
 operating system. With Debian and Ubuntu the resulting PXE bootable image
@@ -377,6 +431,12 @@ For running nodes a DBus service was written to poll the snapshot server
 for updates and another DBus service was written in Python to notify user
 about available updates.
 
+Source code of the solution was published at GitHub
+\footnote{https://github.com/v6sa/butterknife}.
+The instructions for setting up similar infrastructure
+is also present at GitHub and it's constantly being improved.
+Small testing community is already emerging.
+
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{workflow.tex}}
@@ -399,14 +459,54 @@ about available updates.
 \end{figure}
 
 
-\section{Conclusion}
 
-TODO
+
+\chapter{Conclusions and Future work}
+
+\section{Conclusions}
+
 
 
 \section{Future work}
 
 \subsection{Btrfs and BitTorrent integration}
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{butterknife-usecase-bittorrent.tex}}
+\caption{Load distribution using BitTorrent}
+\label{fig:digraph}
+\end{figure}
+
+BitTorrent is a protocol designed for peer-to-peer file transfer.
+A .torrent file contains metadata about the content in question and a
+tracker URL - that is the service which is used to discover other peers in the swarm.
+BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
+BitTorrent protocol does not specify minimal piece length
+\footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
+but for example libtorrent imposes restriction of having piece length
+a multiple of 16KB
+\footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html#id5}}.
+It is reccommended to keep BitTorrent piece size below 100kB,
+which means the block size is correlated to content size
+\footnote{\url{https://wiki.vuze.com/w/Torrent_Piece_Size}}.
+
+For multi-file torrents the files in the directory tree are handled
+as a continuous stream of data of the files concatenated to each other,
+thus changing size of a file that happens to be placed in the beginning of a torrent
+file results in completely different checksums for the whole torrent.
+Such approach is reasonable for rarely changing data, but for current usecase
+causes significant overhead.
+
+BitComet has implemented \emph{Align File to Piece Boundary} function,
+which adds a padding file if necessary to align files to piece boundary.
+This way pieces which contain identical files retain same piece checksums,
+however small files add significant overhead due to padding files.
+Compression of pieces sent on the wire has been proposed
+\footnote{\url{https://wiki.theory.org/BitTorrentWishList}}.
+This could resolve the overhead issue introduced due to padding files.
+The problem could also be solved simply by introducing new file mode.
 
 Btrfs uses crc32c for checksumming and support for alternative checksum algorithms is planned.
 Current on-disk format supports up to 256-bit hash checksum per
@@ -418,18 +518,17 @@ On most Linux workstation page size is set to 4KB, thus 16KB block
 size takes precedence.
 \footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}
 
-BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
-BitTorrent protocol does not specify minimal piece length
-\footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
-but for example libtorrent imposes restriction of having piece length
-a multiple of 16KB
-\footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html#id5}}.
-
 As online deduplication is in works for Btrfs it makes sense to combine the two,
 implementing additional \emph{ioctl} for Btrfs in order to perform block lookup
 by checksum is trivial task.
 This could make it possible to implement high-performance BitTorrent seedbox
 which takes advantage of Btrfs metadata.
+
+BitTorrent-style checksumming allows sharing platform-independent
+(images, fontconfig cache, dconf database, LaTeX packages,
+Bash/Python/Ruby/Perl/Lua code)
+file chunks between machines of different architecture (amd64, i386, armel, armhf)
+from arbitrary snapshots.
 
 \subsection{Alternative filesystem layouts}
 

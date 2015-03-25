@@ -371,7 +371,7 @@ application software.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{butterknife-usecase-http.tex}}
+\scalebox{0.5}{\input{dia/butterknife-usecase-http.tex}}
 \caption{Deployment over HTTP}
 \label{fig:digraph}
 \end{figure}
@@ -379,7 +379,7 @@ application software.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{butterknife-usecase-multicast.tex}}
+\scalebox{0.5}{\input{dia/butterknife-usecase-multicast.tex}}
 \caption{Deployment over multicast}
 \label{fig:digraph}
 \end{figure}
@@ -439,21 +439,21 @@ Small testing community is already emerging.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{workflow.tex}}
+\scalebox{0.5}{\input{dia/workflow.tex}}
 \caption{Workflow for btrfs snapshot based software deployment}
 \label{fig:digraph}
 \end{figure}
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{traditional-partitioning.tex}}
+\scalebox{0.5}{\input{dia/traditional-partitioning.tex}}
 \caption{Traditional partitioning}
 \label{fig:digraph}
 \end{figure}
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{pooled-partitioning.tex}}
+\scalebox{0.5}{\input{dia/pooled-partitioning.tex}}
 \caption{Pooled partitioning}
 \label{fig:digraph}
 \end{figure}
@@ -474,7 +474,7 @@ Small testing community is already emerging.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{butterknife-usecase-bittorrent.tex}}
+\scalebox{0.5}{\input{dia/butterknife-usecase-bittorrent.tex}}
 \caption{Load distribution using BitTorrent}
 \label{fig:digraph}
 \end{figure}
@@ -525,8 +525,8 @@ This could make it possible to implement high-performance BitTorrent seedbox
 which takes advantage of Btrfs metadata.
 
 BitTorrent-style checksumming allows sharing platform-independent
-(images, fontconfig cache, dconf database, LaTeX packages,
-Bash/Python/Ruby/Perl/Lua code)
+(images; fontconfig cache; dconf database; LaTeX packages;
+Bash, Python, Ruby, Perl, Lua, Java source and bytecode)
 file chunks between machines of different architecture (amd64, i386, armel, armhf)
 from arbitrary snapshots.
 

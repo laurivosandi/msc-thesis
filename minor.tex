@@ -46,12 +46,15 @@ In March of 2014 they decided to pilot Linux in 5 educational institutions: Must
 
 \section{Examples}
 
+\subsection{
+
 \subsection{Wireless networks}
 
 With the introduction of various e-study systems the requirements for
 wireless networks have increased significantly.
-Estwin project started in 2006 (?) promised to establish fibre links within 1.5km range
-from each Estonian household.
+EstWin project started in 2009 promised to establish fibre links within 1.5km range
+from each Estonian household
+\footnote{\url{http://www.elasa.ee/}}.
 Estonian Educational Network will be covering the last mile for each school of Estonia
 by 2016.
 This means by next year each Estonian school is about to have gigabit link to the premises.
@@ -90,16 +93,18 @@ Enterprise grade hardware which conforms to the requirements:
 Considering that all the mentioned vendors impose vendor lock-ins
 (closed source firmware, firmware signature checks, etc)
 it might not be a good idea to have the software of the hardware vendor.
+For example Colubris was acquired by Hewlett Packard in 2008 and many products
+sold by Colubris are unsupported and customers are left with
+deprecated hardware.
+
 In fact most wireless hardware vendors are using open-source, but
 fail to adhere to General Public License conditions which should grant
 the hardware user the freedom to modify the software.
 Cisco \footnote{http://www.fsf.org/news/2008-12-cisco-suit}
 Mikrotik \footnote{https://www.mail-archive.com/legal@lists.gpl-violations.org/msg00335.html}
-
-
-For example Colubris was acquired by Hewlett Packard in 2008 and many products
-sold by Colubris are unsupported and customers are left with
-deprecated hardware.
+and other enterprise hardware vendors are in fact taking advantage
+of open-source software to build their products, but GPL license conditions
+are blatantly disregarded.
 
 After analyzing various hardware that is supported by OpenWrt
 a decision was made in favour of TP-Link WDR4300.
@@ -123,10 +128,26 @@ As an example 46000 EUR price was offered to cover 7-floor building.
 
 Using common sense, open-source tools and open-source friendly hardware
 sustainable and reasonably priced solutions can be built.
-WDR4300 can be obtained at sub 60 EUR pricetag.
+
+802.11abgn compliant TP-Link WDR4300 can be obtained at sub 60 EUR pricetag.
+Gigabit capable (802.11ac) TP-Link Archer C7 can be obtainer at around 100 EUR.
 A regular PC can be used for routing purposes
 
 
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/wlan-controller.tex}}
+\caption{Example gigabit capable infrastructure}
+\label{fig:digraph}
+\end{figure}
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\includegraphics[scale=0.20]{img/haabneeme-wifi.jpg}}
+\caption{TP-Link WDR4300 deployed with PoE injector}
+\label{fig:digraph}
+\end{figure}
 
 
 

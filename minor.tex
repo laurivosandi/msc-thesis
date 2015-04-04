@@ -25,15 +25,14 @@ titled \emph{Efficient and Reliable Filesystem Snapshot Distribution}.
 IT is essential infrastructure for every country, especially developing countries.
 The harsh reality is that western IT corporations often offer products
 and services for developing countries at non-sustainable prices in order
-to gain userbase. Once the county has reached certain living standard the
+to gain userbase. Once the country has reached certain living standard the
 pricing is adjusted accordingly.
-
 
 As the users have been learning to use particular product,
 reluctance to switch is increased due to training costs,
 user fustration etc.
 Most often organizations submit to paying licensing fees at significantly
-higher prices due to users protesting against change.
+higher prices due to protesting computer users against change.
 
 Starting from the end of 2013 Microsoft does not consider Estonia a developing country
 anymore. The implication of the change was that the Microsoft Windows and Microsoft
@@ -44,116 +43,125 @@ save additional 210 000 EUR. This was the main motivation for Tallinn Education 
 
 In March of 2014 they decided to pilot Linux in 5 educational institutions: Mustamäe Upper Secondary School [2], Tallinn Mahtra Primary School [3], Merivälja school [4], Tallinn Mesimummu kindergarten [5] and Tallinn Tammetõru kindergarten [6]. Procurement competition was won by Arvuti Traumapunkt OÜ [7] and Silver Püvi hired me to take care of setting up infrastructure servers. Most of the work so far has been done remotely in conjunction with local IT-support. Before the migration I had around 7 years of open-source hacking experience, however I never had experience with remote management or centralized authentication.
 
-\section{Examples}
 
-\subsection{
+\section{Challenge}
 
-\subsection{Wireless networks}
-
-With the introduction of various e-study systems the requirements for
-wireless networks have increased significantly.
-EstWin project started in 2009 promised to establish fibre links within 1.5km range
-from each Estonian household
-\footnote{\url{http://www.elasa.ee/}}.
-Estonian Educational Network will be covering the last mile for each school of Estonia
-by 2016.
-This means by next year each Estonian school is about to have gigabit link to the premises.
-
-In Estonia western vendors offer wireless coverage for educational institutions
-at varying prices.
-As organizations don't know what they need they usually get enterprise solution which
-is overpriced and exceeds their requirements.
-
-Youtube states
-that for 720p video stream 2.5Mbps downlink is required.
-The average sized classroom houses approximately 20-30 students.
-This is yields an upper bound of 75MBps per classroom.
-As 5GHz poorly penetrates concrete wall it makes sense to place
-access point in each room.
-It's also a good idea to provide public and protected networks
-simultaneously.
-
-To reiterate the requirements for wireless network:
+Prior the project I never had experience managing Linux based workstations.
+My goal was to provide a platform which would be easier than current Windows
+workstations.
+In retrospective maintaining Linux-based workstations concerns several aspects:
 
 \begin{itemize}
-
-  \item{5GHz support for modern mobile devices}
-  \item{2.4GHz support for legacy devices}
-  \item{802.11n support for better throughput}
-  \item{Roaming support}
-  \item{Multi-SSID support}
-  \item{Central configuration management}
-  \item{WPA2 Enterprise support for eduroam}
+\item Provisioning - getting the initial software setup onto the computer
+\item Updating - keeping the software up to date
+\item Configuration management - adjusting configuration of various software components
+\item Central authentication - keeping user accounts off the machines
+\item Networked storage - keeping user files off the machines
 \end{itemize}
-Enterprise grade hardware which conforms to the requirements:
 
-* Ruckus ... 500 EUR
+The need for configuration management, central authentication and networked storage was
+recognized immideately.
 
-
-Considering that all the mentioned vendors impose vendor lock-ins
-(closed source firmware, firmware signature checks, etc)
-it might not be a good idea to have the software of the hardware vendor.
-For example Colubris was acquired by Hewlett Packard in 2008 and many products
-sold by Colubris are unsupported and customers are left with
-deprecated hardware.
-
-In fact most wireless hardware vendors are using open-source, but
-fail to adhere to General Public License conditions which should grant
-the hardware user the freedom to modify the software.
-Cisco \footnote{http://www.fsf.org/news/2008-12-cisco-suit}
-Mikrotik \footnote{https://www.mail-archive.com/legal@lists.gpl-violations.org/msg00335.html}
-and other enterprise hardware vendors are in fact taking advantage
-of open-source software to build their products, but GPL license conditions
-are blatantly disregarded.
-
-After analyzing various hardware that is supported by OpenWrt
-a decision was made in favour of TP-Link WDR4300.
-This particular router
-contains Atheros system on chip and Atheros wireless chips
-which are also used in enterprise products.
-Atheros wireless chips support 802.11abgn, multiple SSID-s,
-RADIUS authentication and much more.
-
-Using OpenWrt a completely binary-blob free firmware can be built.
-The lack of blobs has it's merits - latest Linux kernel can be used
-and all security updates are available significantly earlier.
-Vendor back-doors can also be mitigated using customized firmware.
-
-
-In Estonia western vendors offer wireless coverage for educational institutions
-at varying prices.
-As organizations don't know what they need they usually get enterprise solution which
-is overpriced and exceeds their requirements.
-As an example 46000 EUR price was offered to cover 7-floor building.
-
-Using common sense, open-source tools and open-source friendly hardware
-sustainable and reasonably priced solutions can be built.
-
-802.11abgn compliant TP-Link WDR4300 can be obtained at sub 60 EUR pricetag.
-Gigabit capable (802.11ac) TP-Link Archer C7 can be obtainer at around 100 EUR.
-A regular PC can be used for routing purposes
-
+Puppet was chosen for configuration management due to it's enterprise capabilities
+and vibrant community. Foreman was used as Puppet web interface to provide
+overview of the inventory.
+Initially Puppet was used to also perform software updates, but
+it turned out to be a bad idea because even though Ubuntu panagement
+performs well for most cases, there are still some corner cases
+which may render the whole package management system unusable.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{dia/wlan-controller.tex}}
-\caption{Example gigabit capable infrastructure}
+\scalebox{0.5}{\includegraphics[scale=0.6]{img/foreman.png}}
+\caption{Foreman}
 \label{fig:digraph}
 \end{figure}
 
+Initially OpenLDAP was chosen for authentication and authorization,
+but later we switched to Samba4 in order to provide better interoperability with
+Windows workstations.
+In fact Samba4 implements Microsoft Active Directory functionality to large extent,
+making it possible to avoid licensing fees and 
+
+
+\section{Transforming experience into service}
+
+\subsection{Ubuntu deployment service}
+
+As part of the major thesis a more efficient way of deploying Linux-based
+workstations was devised.
+The resulting software components were used to build an service for
+distributing Linux-based operating system templates which can be used to
+quickly deploy workstations, laptops and netbooks customized
+for particular purpose.
+Currently Koodur OÜ mainly maintains template of Ubuntu 14.04 LTS based
+workstation which uses lightweight MATE desktop.
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\includegraphics[scale=0.20]{img/haabneeme-wifi.jpg}}
-\caption{TP-Link WDR4300 deployed with PoE injector}
+\scalebox{0.5}{\includegraphics[scale=0.5]{img/edu-workstation}}
+\caption{MATE desktop}
 \label{fig:digraph}
 \end{figure}
 
+We've fine-tuned MATE to slightly mimic Windows XP layout to provide
+familiar looks to older generation of users.
+
+
+\subsection{Identity service}
+
+Our customized Ubuntu 14.04 template integrates
+well with existing Active Directory deployments
+and Windows file shares.
+We also provide Active Directory compatible
+authenticationa and authorization service using Samba4.
+This service is mainly targeted towards
+smaller organizations lacking local
+infrastructure and manpower to operate such services.
+
+\subsection{ownCloud}
+
+ownCloud is an open-source project which implements
+Dropbox functionality to large extent.
+In conjunction with out authentication service
+we provide an ownCloud instance for our customers.
+
+
+
+automatically associated with the Puppet master instance 
+operated by us to apply security updates and configure the
+deployed operating system.
+
+
+
+  
+
+As the Ubuntu is being continously improved it also requires
+continous maintenance of the templates provided by the service.
+Providing such service also requires extensive knowledge of
+how the Linux-based operating system is put together of 
+thousands of software components and how they interact with each other.
+
+
+The educational institutions were used to bootstrap the service and gain
+required experience to deliver enterprise grade service.
 
 
 
 \section{Conclusion}
 
+
+Snowden revelations pushed various governments to seek for alternatives
+to relying on western technology.
+For instance use of Windows 8 has been banned in German governmental agencies
+\footnote{\url{http://blog.legalsolutions.thomsonreuters.com/law-and-techology/german-government-bans-windows-8-use-nsa-spying-puts-american-companies-risk/}}.
+
+There is a vast pool of open-source tools available on the Internet to cater
+various needs.
+For instance Indian Govenrment mandates use of open-source technologies
+in order to reduce total cost of ownership and to ensure
+strategic control in e-Governance applications and systems in long run
+\footnote{\url{http://deity.gov.in/sites/upload_files/dit/files/policy_on_adoption_of_oss.pdf}}.
 
 
 \bibliographystyle{plain}

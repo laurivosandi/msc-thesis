@@ -124,13 +124,18 @@ and Mac OS X operating systems by Acronis International GmbH.
 The fact that machines need to be taken offline is the main
 drawback of classic disk cloning methods. 
 
-\subsection{Jails, OpenVZ and LXC}
+\subsection{Jails, Solaris Zones, OpenVZ, LXC, }
 
 Jails have been available in FreeBSD since version 4.x. Jails use chroot
 syscall to substitute root filesystem of a process making it possible to
 create a restricted environment which is isolated from the rest of the
 operating system
 \footnote{https://www.freebsd.org/doc/en/books/handbook/jails.html}.
+
+Solaris Zones were introduced few years later adding similar capabilities to Solaris operating system. Solaris Zones took advantage of ZFS filesystem making it possible to snapshot and clone zones.
+
+Linux has included chroot for long time as it's essential feature for switching from initial root filesystem (initramfs/initrd) to actual root filesystem.
+
 
 The main issue with jails is that dependencies of the target application have
 to be available in the jail root filesystem. For instance a Python application
@@ -488,8 +493,8 @@ BitTorrent protocol does not specify minimal piece length
 but for example libtorrent imposes restriction of having piece length
 a multiple of 16KB
 \footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html#id5}}.
-It is reccommended to keep BitTorrent piece size below 100kB,
-which means the block size is correlated to content size
+It is reccommended to keep BitTorrent file size below 100kB,
+which means the piece size is correlated to content size
 \footnote{\url{https://wiki.vuze.com/w/Torrent_Piece_Size}}.
 
 For multi-file torrents the files in the directory tree are handled

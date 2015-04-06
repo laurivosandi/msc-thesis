@@ -103,14 +103,20 @@ it slightly more complicated to use Ansible no manage machines behind NAT.
 Ansible is written in Python and it uses state-driven resource 
 written in YAML.
 
-\subsection{Clonezilla}
+\subsection{Clonezilla, Symantec Ghost, Acronis True Image}
 
 Clonezilla \footnote{http://clonezilla.org/}
 combines various open-source tools into a single cloning suite.
 Clonezilla uses partclone utilities \footnote{http://partclone.org/} to
 identify and transfer only used blocks of various filesystems, most notably
-NTFS, ext4 and Btrfs. Clonezilla can be used to grow filesystems on the fly
-making it possible to use same prepared image for disks of various size.
+NTFS, ext4 and Btrfs.
+Clonezilla supports resizing filesystems after the clone
+in order to make use of the whole disk space available
+in the target machine.
+This makes it possible to use same prepared image for disks of
+various size, the template image has to be of course smaller
+than the target machine disks.
+Clonezilla supports most Windows and Linux filesystems.
 
 Symantec Ghost, previously known as Norton Ghost is a corresponding commericial
 product currently available on the market
@@ -124,7 +130,21 @@ and Mac OS X operating systems by Acronis International GmbH.
 The fact that machines need to be taken offline is the main
 drawback of classic disk cloning methods. 
 
-\subsection{Jails, Solaris Zones, OpenVZ, LXC, }
+\subsection{FSArchiver}
+
+FSArchiver
+\footnote{http://www.fsarchiver.org/}
+is a tool very much similar to Clonezilla,
+but instead of storing disk image on a block level the
+contents are stored on object-level (file, directory).
+All filesystem attributes are preserved for Linux filesystems,
+NTFS support is still experimental.
+For archiving the filesystem has to be unmounted or mounted
+read-only, with the assistance of LVM read-write mounted
+filesystems can be snapshotted and archived afterwards.
+
+
+\subsection{BSD Jails, Solaris Zones, OpenVZ, Linux Containers, systemd-nspawn}
 
 Jails have been available in FreeBSD since version 4.x. Jails use chroot
 syscall to substitute root filesystem of a process making it possible to
@@ -135,94 +155,167 @@ operating system
 Solaris Zones were introduced few years later adding similar capabilities to Solaris operating system. Solaris Zones took advantage of ZFS filesystem making it possible to snapshot and clone zones.
 
 Linux has included chroot for long time as it's essential feature for switching from initial root filesystem (initramfs/initrd) to actual root filesystem.
+Many network services take advantage of chroot syscall to confine
+itself to a particular directory in order to mitigate consequences
+of vulnerabilities and exploits.
 
-
-The main issue with jails is that dependencies of the target application have
-to be available in the jail root filesystem. For instance a Python application
-which has modules loaded before chroot operation could operate without any
-files in the chroot, but shell script which relies on several executables need
-to have those utilities available in chroot as well. With copy-on-write and de
-duplicating filesystems the problem how ever becomes irrelevant as root
+The main issue with chroot is that dependencies of the target
+application have to be available in the chroot root filesystem.
+For instance a Python application which has modules loaded before
+chroot operation could operate without any files in the chroot,
+but shell script which relies on several executables need to have
+those utilities available in chroot as well.
+With copy-on-write and de-duplicating filesystems the problem
+how ever becomes irrelevant as root
 filesystem of the chroots can be duplicated with no significant overhead.
 
+LXC (Linux Containers) 
+\footnote{\url{https://linuxcontainers.org/}}
+takes advantage of the \emph{chroot} syscall and
+recently Linux \emph{cgroups} (control groups subsystem) which permit
+more flexible operating system level virtualization.
+Control groups are used to implement limiting, accounting
+and isolation of CPU, memory, disk I/O, network, etc resource usage.
+LXC allows various backing stores, most notably ZFS and Btrfs
+which make it very easy to enable container snapshotting
+and streaming backups.
 
 \subsection{Docker and Rocket}
 
-Docker started off as a way to automate container deployment and configuration
-using containers and cgroups present in Linux kernel. As Docker started to add
-features that CoreOS developers deemed excessive an alternative project Rocket
-was founded
+Docker started off as a way to automate container deployment and
+configuration using containers and control groups present in Linux
+kernel. As Docker started to add features that CoreOS developers
+deemed excessive an alternative project Rocket was founded
 \footnote{\url{http://www.theregister.co.uk/2014/12/03/coreos_rocket_deep_dive/}}.
 
 \subsection{CoreOS and Ubuntu Core}
 
-CoreOS \footnote{https://coreos.com/} is a rearchitected Linux distribution
-which provides minimalist foundation to run containers.
-It uses two-partition scheme to provide atomic updates of the root filesystem.
-The operating system runs off a read-only filesystem while the other one
-can be patched runtime. Reboot or \emph{kexec} can be used to boot into
-the updated system.
-This prevents rendering device unbootable due to interrupted upgrade.
+CoreOS \footnote{https://coreos.com/} is a rearchitected Linux
+distribution which provides minimalist foundation to run containers.
+It uses two-partition scheme to provide atomic updates of the root
+filesystem. The operating system runs off a read-only filesystem
+while the other one can be patched runtime. Reboot or \emph{kexec}
+can be used to boot into the updated system. This prevents rendering
+device unbootable due to interrupted upgrade.
 
-Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things and as a
-container platform.
-Ubuntu Core introduced root filesystem transactional
-updates to Ubuntu using Snappy
+Ubuntu Core is an Ubuntu flavour tailored towards Internet of Things
+and as a container platform. Ubuntu Core introduced root filesystem
+transactional updates to Ubuntu using Snappy
 \footnote{http://developer.ubuntu.com/en/snappy/}.
 Ubuntu Core is designed to run Docker applications and can be used.
 Snappy is also plays important role in Ubuntu Phone ecosystem.
-Snappy uses OverlayFS (?) to implement transactional updates 
+Snappy uses OverlayFS (?) to implement transactional updates.
 
 
 \subsection{OverlayFS}
 
-OverlayFS is a feature introduced in Linux 3.18 which makes it possible to merge contents of two separate mountpoints on the fly.
-OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of read-only SquashFS filesystem
+OverlayFS is a feature introduced in Linux 3.18 which makes it
+possible to merge contents of two separate mountpoints on the fly.
+OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of
+read-only SquashFS filesystem
 \footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
 
 \subsection{LVM, mdadm and dmraid}
 
-Ext4 has been primary filesystem for Linux based workstations and servers for
-a while. It provides filesystem primitives such as files, directories,
-permissions and timestamping. In order to add redundancy either software RAID
-or logical volume management (LVM) can be used.
+Ext4 has been primary filesystem for Linux based workstations and
+servers for a while. It provides filesystem primitives such as files,
+directories, permissions and timestamping.
+In order to add redundancy
+either software RAID or logical volume management (LVM) can be used.
 
-Software RAID is implemented in Linux by means of \emph{mdadm}. Software RAID
-can be used to build RAID1, RAID0, RAID10/01, RAID5 or RAID6 arrays without
-dedicated RAID controller which could also impose a vendor lock-in.
+Software RAID is implemented in Linux by means of \emph{mdadm}.
+Software RAID can be used to build RAID1, RAID0, RAID10/01, RAID5
+or RAID6 arrays without dedicated RAID controller which could also
+impose a vendor lock-in.
 
-LVM enables pooling of drives, mirroring and snapshotting by adding an
-abstraction layer on top of physcal disks. Any filesystem that can be deployed
-on physical disk can also be deployed on top of LVM's logical volume. The
-kernel takes care of mapping logical addresses to corresponding disk's physical
-address. The snapshotting feature of LVM however has been claimed to be buggy
+LVM enables pooling of drives, mirroring and snapshotting by adding
+an abstraction layer on top of physcal disks. Any filesystem that
+can be deployed on physical disk can also be deployed on top of
+LVM's logical volume. The kernel takes care of mapping logical
+addresses to corresponding disk's physical address.
+The snapshotting feature of LVM however has been claimed to be buggy
 \footnote{http://lwn.net/Articles/522073/}.
 
 \subsection{Btrfs and ZFS}
 
-Btrfs and ZFS both are modern copy on write filesystem for Linux which also
-fills in the role of volume manager. Btrfs has been claimed to be unstable but
-the situation has improved significantly over the past year or two. 
-
-During snapshot send/receive an optimal parent snapshot is identified and that
-is used as basis for the differential snapshot. The Btrfs stream contains
-filesystem operations that are indended to be replayed on a clone of the
-parent subvolume: create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo},
-symlink, \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
-close file, write to file, set/remove extended attributes, truncate file,
-\emph{chmod}, \emph{chown}
-\footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
-
-Debian has supported Btrfs since Squeeze and has improved support since then
-\footnote{https://wiki.debian.org/Btrfs}.  
-
+Btrfs and ZFS both are modern copy on write filesystems
+which also fill in the role of volume manager.
+Btrfs has been claimed to be unstable but the situation has
+improved significantly over the past year or two.
 Facebook has been testing Btrfs in production since the April of 2014
 \footnote{\url{https://btrfs.wiki.kernel.org/index.php/Production_Users}}.
-Chris Mason, a lead developer of Btrfs joined Facebook in the end of 2013
+Chris Mason, a lead developer of Btrfs joined Facebook
+in the end of 2013 with the goal of improving Btrfs support
+for enterprise applications
 \footnote{\url{http://article.gmane.org/gmane.comp.file-systems.btrfs/30420}}.
-RAID5/6 support and improved data scrubbing for Btrfs was released with Linux
-3.19 \footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
 
+Btrfs supports redundancy in RAID0/1/10 configurations and
+RAID5/6 support was added with Linux 3.19
+\footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
+Btrfs supports zlib and lzo compression algorithms,
+however enabling compression for Btrfs is known to
+seriously hamper performance of database engines.
+
+During snapshot send/receive an optimal parent snapshot is
+identified and that is used as basis for the differential snapshot.
+The Btrfs snapshot stream contains filesystem operations that are indended to be replayed on a clone of the parent subvolume:
+create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
+\emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
+close file, write to file, set/remove extended attributes,
+truncate file, \emph{chmod}, \emph{chown}
+\footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
+
+GRUB (GRand Unified Bootloader)
+\footnote{\url{https://bugzilla.redhat.com/show_bug.cgi?id=748071}}
+is the main bootloader used
+by Linux-based operating systems on x86 and PowerPC based machines.
+Earlier versions of GRUB supported multi-stage booting process,
+which meant that GRUB stage1 binary was embedded in the
+master boot record which loaded stage1.5 embedded
+32256 byte area between the MBR and first partition.
+The stage1.5 contained filesystem drivers which could
+address the filesystem contents and boot stage2 from
+the /boot/grub of the Linux filesystem.
+
+GRUB2 dropped support for multi-stage booting process,
+instead it is recommends that the first partition
+starts at megabyte boundary, leaving
+more than 500kB room between MBR
+and first partition which is well enough to accommodate
+feature-rich bootloader.
+GRUB2 added support for booting from Btrfs root filesystem
+in various configurations
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#Does_grub_support_btrfs.3F}},
+hence in order to boot from
+Btrfs a GRUB2 installation is required and older versions of
+GRUB are not supported.
+GRUB2 also now supports booting from a particular subvolume,
+making it possible to place several root filesystems
+in same Btrfs pool.
+
+Debian has supported Btrfs since Squeeze and has improved support
+since then \footnote{https://wiki.debian.org/Btrfs}.
+Ubuntu also has supported Btrfs for a while with customized
+subvolume naming scheme:
+root filesystem is placed in subvolume named \emph{@}
+and home directories in a subvolume called \emph{@home}.
+
+\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
+
+In Ubuntu package repositories there is available
+\emph{apt-btrfs-snapshot}
+\footnote{https://launchpad.net/apt-btrfs-snapshot}
+package,
+which creates snapshot of the root filesystem subvolume \emph{@}
+before every \emph{apt-get} operation.
+
+\emph{yum-plugin-fs-snapshot}
+\footnote{\url{http://man7.org/linux/man-pages/man1/yum-fs-snapshot.1.html}}
+is the corresponding package for Fedora and
+Red Hat based distributions.
+
+These approaches make it possible to boot into previous snapshots
+in case there are issues with the updated packages.
 
 \subsection{FreeNAS, Rockstor and OpenMediaVault}
 
@@ -238,41 +331,37 @@ All three of them support SMB/CIFS (Windows file shares),
 NFS (UNIX file shares) and filesystem aided snapshots.
 
 
-\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
 
-In Ubuntu package repositories there is available \emph{apt-btrfs-snapshot}
-\footnote{https://launchpad.net/apt-btrfs-snapshot} package,
-which creates snapshot of the root filesystem before every
-\emph{apt-get} operation.
-
-\emph{yum-plugin-fs-snapshot}
-\footnote{\url{http://man7.org/linux/man-pages/man1/yum-fs-snapshot.1.html}}
-is the corresponding package for Fedora and
-Red Hat based distributions.
-
-These approaches make it possible to boot into previous snapshots
-in case there are issues with the updated packages.
 
 
 \subsection{rsync and rsnapshot}
 
-rsync is an open source utility designed for fast incremental file transfer.
-It is most commonly invoked with archiving flag (-a) which retains permissions, ownership, timestamps and symlinks. In that case files are transferred only if
+rsync is an open source utility designed for
+fast incremental file transfer.
+It is most commonly invoked with archiving flag (-a) which
+retains permissions, ownership, timestamps and symlinks.
+In that case files are transferred only if
 modified timestamp or file length differs.
 
-rsnapshot is an utility that takes advantage of hardlinking functionality of ext4 and other similar filesystems. By creating a clone of a directory tree using hardlinks no extra disk space is consumed. Applying classical rsync on top of the clone only increments by the disk usage of changed files.
+rsnapshot is an utility that takes advantage of hardlinking
+functionality of ext4 and other similar filesystems.
+By creating a clone of a directory tree using hardlinks no
+extra disk space is consumed. Applying classical rsync on top of
+the clone only increments by the disk usage of changed files.
 
 
 \subsection{OpenWrt and DD-WRT}
 
-Most Linux based open-source router firmwares originate from Linksys WRT54G
-wireless router.
+Most Linux based open-source router firmwares originate from
+Linksys WRT54G wireless router.
 Initially Cisco did not provide source code for the router as GPL mandates.
-Between 2003-2008 Free Software Foundation attempted to work with Cisco
-to work out issues, but as Cisco continued to release new devices with similar
-issues Free Software Foundation eventually sued Cisco for malpractice.
-After the lawsuit Cisco complied and has been releasing firmware sources for
-all of their devices which make use of software released under GPL licenses.
+Between 2003-2008 Free Software Foundation attempted to cooperate
+with Cisco to work out issues, but as Cisco continued to release
+new devices with similar issues Free Software Foundation eventually
+sued Cisco for malpractice.
+After the lawsuit Cisco complied and has been releasing firmware
+sources for all of their devices which make use of software
+released under GPL licenses.
 \footnote{http://www.fsf.org/licensing/2008-12-cisco-complaint}.
 Linksys WRT54G sources were basis for various Linux distributions for routers such as
 DD-WRT \footnote{http://www.dd-wrt.com/},
@@ -294,22 +383,22 @@ bootloader, read-only root filesystem, read-write overlay.
 
 The read-only root filesystem contains SquashFS
 \footnote{http://squashfs.sourceforge.net/}
-which is highly-efficient compressed read-only filesystem that support variety
-of compression The read-write overlay partition is formatted as JFFS2
-(journalling flash filesystem).
+which is highly-efficient compressed read-only filesystem that
+supports variety of compression The read-write overlay partition
+is formatted as JFFS2 (journalling flash filesystem).
 
-This method makes it possible to: perform factory reset simply by formatting
-the JFFS2 partition and upgrading firmware by overwriting SquashFS partition.
-Due to lack of redundancy in consumer-grade routers an interrupted firmware
-upgrade usually renders device unfit for use. This is also known as
-\emph{bricking} in embedded developer jargon.
+This method makes it possible to: perform factory reset simply by
+formatting the JFFS2 partition and upgrading firmware by overwriting
+SquashFS partition. Due to lack of redundancy in consumer-grade routers
+an interrupted firmware upgrade usually renders device unfit for use. This is also known as \emph{bricking} in embedded developer jargon.
 
 
 \subsection{Android}
 
 Android ROM images are typically distributed as zip files which contain 
 binary blobs for modem and bootloader in addition to snapshots of the
-file primary filesystems of Android: boot, cache, recovery, system and userdata
+file primary filesystems of Android: boot, cache, recovery, system and
+userdata
 \footnote{https://dl.google.com/dl/android/aosp/shamu-lrx22c-factory-ff173fc6.tgz}.
 Differential images are also available, in that case zip file contains
 directory tree of files intended to be overwritten or added to the original
@@ -323,8 +412,8 @@ An alternative Fastboot method is also present in most
 Android devices and it can be used to directly write raw filesystem images and
 unlock the device
 \footnote{\url{http://wiki.cyanogenmod.org/w/Doc:_fastboot_intro}}.
-As Android is open-source vendors tend to customize various aspects of the
-software update process.
+As Android is open-source vendors tend to customize various aspects
+of the software update process.
 
 
 
@@ -337,39 +426,107 @@ Glance image service, Ironic bare metal provisioning,
 Swift object storage and Cinder block storage.
 Glance provides discovery, registery and retrieval services of virtual machine images
 \footnote{http://docs.openstack.org/developer/glance/}.
-Glance BitTorrent delivery enabled BitTorrent support for transferring the images
+Glance BitTorrent delivery enables BitTorrent support for transferring the images
 \footnote{https://blueprints.launchpad.net/glance/+spec/glance-bittorrent-delivery}.
+
+
+
 
 
 \chapter{Analysis}
 
-Ubuntu package management fits most scenarios, but there are some rough edges:
-package list corruption
-\footnote{http://askubuntu.com/questions/532200/14-04-lts-apt-get-segfault},
+The initial task was to use Ubuntu as operating system basis
+for schools due to rich set of both open-source and
+proprietary software components available in Ubuntu ecosystem.
+
+Initially the machine deployment was a tedious task involving
+manual labour:
+The Ubuntu 12.04 LTS image had to be downloaded from the Internet
+and transferred to a memory stick.
+The Ubuntu installer was booted from the memory stick
+and usual installation was performed which took roughly 20 minutes.
+The machine was booted into Ubuntu,
+Puppet was installed on the machine and Puppet configuration
+was tweaked to use our server.
+This took another 10 minutes and was not a procedure that could
+be performed by a novice user using (pseudo-)graphical user interface.
+Once the certificates was signed on the Puppetmaster the
+machine downloaded necessary packages and applied configuration
+changes.
+Usually this would take several Puppet runs and as a result
+setting up a classroom of computers took several days.
+
+Ubuntu uses APT (Advanced Packaging Tool) as basis for
+it's package management.
+APT was originally developed as part of Debian operating system
+to be used as \emph{dpkg} frontend.
+While \emph{dpkg} can be used to install and remove packages,
+it does not provide dependency tracking nor fetching
+packages from remote locations which are implemented by APT.
+APT significantly simplifies the installation of software
+components by downloading packages from different sources
+and checking package dependencies prior installation with \emph{dpkg}.
+
+Ubuntu Software Center builds another abstraction on top of APT,
+while hiding libraries and other system components it enables
+even more simplified installation of apps for Ubuntu based
+machines, for remotely managed machines the Ubuntu Software Center
+and other graphical package management tools were removed.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\includegraphics[scale=0.6]{img/ubuntu-software-center.png}}
+\caption{Ubuntu Software Center}
+\label{fig:ubuntu-software-center}
+\end{figure}
+
+There are however certain corner-cases where APT may render
+the package management unusable.
+For instance package list corruption was faced on several occasions,
+in that case APT crashes with segmentation fault
+\footnote{http://askubuntu.com/questions/532200/14-04-lts-apt-get-segfault}
+and currently the only known solution to the problem
+involves deleting package lists and running \emph{apt-get update} again.
+
+
 faulty scripting in packages
-\footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367#post5216367}},
+\footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367#post5216367}}.
+
 bandwidth overhead etc.
+
 
 Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
 have proven to be especially troublesome due to the fact that system libraries
 and files are updated and interrupted release upgrade may leave system
 in an unusable state.
+Even so separate filesystem for home directories has
+proven to be effective method against wiping the whole disk
+during reinstall of Ubuntu.
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/pooled-partitioning.tex}}
+\caption{Pooled partitioning}
+\label{fig:pooled-partitioning}
+\end{figure}
+
 
 Debian community has been working hard to provide differential updates for
 the packages, but as of February 2015 the efforts have proven fruitless.
 Differential updates are applied for package lists
 \footnote{\url{https://www.debian-administration.org/article/439/Avoiding_slow_package_updates_with_package_diffs}},
 but binary diffs for packages have not implemented yet.
-Fedora community has however successfully deployed differential pacakges
+Fedora community has however successfully deployed differential packages
 \footnote{http://fedoraproject.org/wiki/Features/Presto},
-thus reducing the amount of data needed to be transferred during an pacakge update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern, especially for low-bandwidth links.
+thus reducing the amount of data needed to be transferred during an package update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern, especially for low-bandwidth links.
 
-Puppet, SaltStack, Chef, Ansible and other traditional configuration management
-fit best the scenario where each node has slightly different configuration and
-it makes sense to keep them separate. However provisioning very similar nodes
-with for instance Foreman has obvious overhead - each node has to fetch updated
-packages independently from the same APT repositories, same has to be done for
-application software.
+Puppet, SaltStack, Chef, Ansible and other traditional configuration
+management fit best the scenario where each node has slightly different
+configuration and it makes sense to keep them separate. However
+provisioning very similar nodes with for instance Foreman has obvious
+overhead - each node has to fetch updated packages independently from
+the same APT repositories, same has to be done for application software.
 
 \chapter{Prototype}
 
@@ -378,7 +535,7 @@ application software.
 \centering
 \scalebox{0.5}{\input{dia/butterknife-usecase-http.tex}}
 \caption{Deployment over HTTP}
-\label{fig:digraph}
+\label{fig:butterknife-usercase-http}
 \end{figure}
 
 
@@ -386,10 +543,8 @@ application software.
 \centering
 \scalebox{0.5}{\input{dia/butterknife-usecase-multicast.tex}}
 \caption{Deployment over multicast}
-\label{fig:digraph}
+\label{fig:butterknife-usecase-multicast}
 \end{figure}
-
-
 
 
 Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
@@ -415,22 +570,32 @@ Buildroot was eventually used to generate an compact 10MB all-in-one
 PXE-bootable image. Utilities \emph{dialog} in conjunction with
 \emph{curl}, \emph{jq} and others were used to build the user-interface
 and Bash was used to program the user-interface logic.
+Resizing of NTFS filesystems is provided by \emph{ntrfsresize} utility
+which is part of \emph{ntfs-3g} package, this eases deployment of
+dual-boot machines.
+Complete multicast is supported via consistent snapshot naming scheme
+and \emph{udpcast-receive} and \emph{udpcast-sender} utilities which
+are part of \emph{udpcast} package.
+
 The security model for the initial deployment phase could be improved
 as only method of verification of the source is the certificate
 authority chain verified by \emph{curl} during the Btrfs snapshot
 retrieval.
 
 LXC containers are used to bootstrap the template for provisioning.
-With Btrfs backing store on top of a Btrfs filesystem the container
-can be saved in an isolated Btrfs subvolume which makes it easy to
-snapshot the container.
+Creating container with Btrfs backing store (lxc-create -B btrfs)
+on top of a Btrfs filesystem places the container in an
+isolated subvolume which makes it easy to snapshot the container.
 Within the container \emph{puppet apply} and similar methods can be used
 to take advantage of already existing configuration management know-how.
-Otherwise traditional manual labour can be employed to set up the template.
-During the release phase the LXC container is stopped, pre-release scripts
-are executed to clean up package cache and temporary files.
+Otherwise traditional manual labour can be employed to set up the template: installing packages, tweaking configuration files etc.
+
+During the release phase the LXC container is stopped, pre-release
+scripts are executed to clean up package cache and temporary files.
 Then a read-only Btrfs snapshot is generated from the container root filesystem.
 At this point new snapshot becomes available for other nodes.
+
+
 
 For running nodes a DBus service was written to poll the snapshot server
 for updates and another DBus service was written in Python to notify user
@@ -439,27 +604,13 @@ about available updates.
 Source code of the solution was published at GitHub
 \footnote{https://github.com/v6sa/butterknife}.
 The instructions for setting up similar infrastructure
-is also present at GitHub and it's constantly being improved.
+are also present at GitHub and are constantly being improved.
 Small testing community is already emerging.
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{dia/workflow.tex}}
 \caption{Workflow for btrfs snapshot based software deployment}
-\label{fig:digraph}
-\end{figure}
-
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\input{dia/traditional-partitioning.tex}}
-\caption{Traditional partitioning}
-\label{fig:digraph}
-\end{figure}
-
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\input{dia/pooled-partitioning.tex}}
-\caption{Pooled partitioning}
 \label{fig:digraph}
 \end{figure}
 
@@ -470,23 +621,25 @@ Small testing community is already emerging.
 
 \section{Conclusions}
 
+The implementation exceeds rather than  the needs of educational 
+
 
 
 \section{Future work}
 
-\subsection{Btrfs and BitTorrent integration}
+\subsection{BitTorrent integration}
 
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{dia/butterknife-usecase-bittorrent.tex}}
-\caption{Load distribution using BitTorrent}
+\caption{Possible load distribution scenario using BitTorrent}
 \label{fig:digraph}
 \end{figure}
 
 BitTorrent is a protocol designed for peer-to-peer file transfer.
 A .torrent file contains metadata about the content in question and a
-tracker URL - that is the service which is used to discover other peers in the swarm.
+tracker URL - that is the service which is used to discover other peers in the swarm, that's 
 BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
 BitTorrent protocol does not specify minimal piece length
 \footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
@@ -513,27 +666,45 @@ Compression of pieces sent on the wire has been proposed
 This could resolve the overhead issue introduced due to padding files.
 The problem could also be solved simply by introducing new file mode.
 
+
+
 Btrfs uses crc32c for checksumming and support for alternative checksum algorithms is planned.
 Current on-disk format supports up to 256-bit hash checksum per
 metadata block and arbitrary count of blocks for per-block checksums.
 \footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#What_checksum_function_does_Btrfs_use.3F}}
-As of November 2013 Btrfs defaults to 16KB or page size whichever
+As of November 2013 Btrfs defaults to 16kB or page size whichever
 is larger.
-On most Linux workstation page size is set to 4KB, thus 16KB block
+On most Linux workstation page size is set to 4kB, thus 16kB block
 size takes precedence.
 \footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}
 
-As online deduplication is in works for Btrfs it makes sense to combine the two,
-implementing additional \emph{ioctl} for Btrfs in order to perform block lookup
-by checksum is trivial task.
-This could make it possible to implement high-performance BitTorrent seedbox
-which takes advantage of Btrfs metadata.
+As online deduplication is in works for Btrfs it makes sense to
+combine the two, implementing additional \emph{ioctl} for Btrfs in
+order to perform block lookup by checksum is trivial task.
+This could make it possible to implement high-performance
+BitTorrent seedbox which takes advantage of Btrfs metadata.
 
-BitTorrent-style checksumming allows sharing platform-independent
+BitTorrent-style checksumming would permit sharing platform-independent
 (images; fontconfig cache; dconf database; LaTeX packages;
 Bash, Python, Ruby, Perl, Lua, Java source and bytecode)
 file chunks between machines of different architecture (amd64, i386, armel, armhf)
 from arbitrary snapshots.
+
+Generating .torrent corresponding to a root filesystem has other issues
+as well.
+Piece size of 16kB results in a torrent file
+exceeding 10MB for Ubuntu root filesystem and that didn't even
+include padding files required to align piece boundary to file beginning.
+Most BitTorrent client implementations fail to handle .torrent
+files of such size resulting in out of memory errors or freezes.
+Also BitTorrent currently does not handle symlinks or POSIX
+filesystem permissions and access control lists
+\footnote{\url{http://users.suse.com/~agruen/acl/linux-acls/online/}}.
+
+This leads us to believe that
+these properties could of course be transferred
+using additional manifest file.
+
 
 \subsection{Alternative filesystem layouts}
 
@@ -543,6 +714,12 @@ of building Linux based systems using Btrfs snapshots.
 The new layout requires significant effort from operating system distributors,
 software suite vendors but promises significant save of effort on testing
 software on Linux based systems.
+Most notably a snapshot naming scheme is proposed in the article,
+which would permit mixing operating system files with different
+sets of libraries, frameworks and applications.
+
+
+
 
 Debian has put significant effort into making Debian package builds reproducible
 \footnote{https://wiki.debian.org/ReproducibleBuilds}.

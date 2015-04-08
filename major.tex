@@ -23,20 +23,20 @@ TODO
 
 
 
-\chapter{Introduction}
+\section{Introduction}
 
 
-\section{Motivation}
+\subsection{Motivation}
 
 The foundation of current work was established while author was setting up
 the infrastructure to deploy Ubuntu 12.04 LTS on the PC-s of educational
 institutions of Tallinn as part of the ongoing efforts of Tallinn Education
-Department to switch from proprietary solutions to open-source software.
+Department to switch from proprietary tools to open solutions
+in order to avoid vendor lock-in.
 
 Puppet was set up to manage Ubuntu workstations remotely. Local IT-support
 took the role of bootstrapping the machines and joining them to remote
 management server.
-
 
 Customer A runs hundreds of embedded ARM computers for digital signage.
 Software is currently updated by mailing the customer an SD-card with
@@ -57,23 +57,20 @@ but the budget is lacking and therefore manual labour has to be minimized.
 Glitch-free software update mechanism is crucial part of minimizing manual
 labour.
 
-\section{Contributions}
+\subsection{Contributions}
 
 The work produced a novel method of deploying and maintaining Linux
 based workstations in an guaranteed and secure manner.
 
-\section{Current approaches}
+\subsection{Current approaches}
 
-There are various  currently used to manage Linux based workstations.
+There are various tools used to manage Linux based workstations.
 In this chapter a background of different methods is outlined.
 Subsequently a specification is derived from the needs of customers of
 the author. 
 
 
-\subsection{SaltStack}
-TODO
-
-\subsection{Puppet and Foreman}
+\subsubsection{Puppet and Foreman}
 
 Puppet is a remote management system which features its own declarative
 domain-specific language to describe the state of the configuration
@@ -85,17 +82,23 @@ both are written in Ruby and released the latest versions are released under
 liberal Apache 2.0 license. Puppet can be used to manage both Linux and
 Windows servers and workstations as well.
 
+Puppet uses TLS based security model:
+Puppetmaster maintains a certificate authority which is used
+to sign certificate requests submitted by clients.
+Fully qualified hostname is used to identify nodes and
+it is also used derive common name for the X509 certificates.
+Once a certificate is signed the nodes are expected to
+execute whatever Puppetmaster dictates them to do.
+
 Foreman is a complete lifecycle management software for physical and virtual
 servers. Foreman incorporates Puppet, a custom web interface and provisioning
 tools into single unified application. Even without using provisioning features
 Foreman makes one of the most feature-complete web interfaces for Puppet
 rivaling the Puppet Dashboard.
 
-\subsection{Chef}
+\subsubsection{Chef, Ansible and Salt}
 
 Chef is infrastructure automation tool. Chef is written in Ruby and Erlang. Chef uses domain-specific language written in Ruby.
-
-\subsection{Ansible}
 
 Ansible remote management software uses SSH to connect to the nodes which
 means there is no agent running on the managed machine, this however makes
@@ -103,7 +106,24 @@ it slightly more complicated to use Ansible no manage machines behind NAT.
 Ansible is written in Python and it uses state-driven resource 
 written in YAML.
 
-\subsection{Clonezilla, Symantec Ghost, Acronis True Image}
+Salt is an open-source configuration management system,
+capable of maintaining remote nodes in defined states and 
+a distributed remote execution system used to execute commands
+on remote nodes, either individually or by arbitrary selection criteria
+\footnote{\url{http://docs.saltstack.com/en/latest/topics/}}.
+Salt is developed by SaltStack which sells services around Salt.
+Salt uses ZeroMQ to transfer data between Salt server and
+Salt minions.
+Currently alternative transport
+RAET (Reliable Asynchronous Event Transport)
+is in development and it is designed Salt in mind.
+RAET attempts to address more complex message routing
+schemes which are not possible with ZeroMQ.
+
+
+
+
+\subsubsection{Clonezilla, Symantec Ghost, Acronis True Image}
 
 Clonezilla \footnote{http://clonezilla.org/}
 combines various open-source tools into a single cloning suite.
@@ -130,7 +150,7 @@ and Mac OS X operating systems by Acronis International GmbH.
 The fact that machines need to be taken offline is the main
 drawback of classic disk cloning methods. 
 
-\subsection{FSArchiver}
+\subsubsection{FSArchiver}
 
 FSArchiver
 \footnote{http://www.fsarchiver.org/}
@@ -144,7 +164,7 @@ read-only, with the assistance of LVM read-write mounted
 filesystems can be snapshotted and archived afterwards.
 
 
-\subsection{BSD Jails, Solaris Zones, OpenVZ, Linux Containers, systemd-nspawn}
+\subsubsection{BSD Jails, Solaris Zones, OpenVZ, Linux Containers, systemd-nspawn}
 
 Jails have been available in FreeBSD since version 4.x. Jails use chroot
 syscall to substitute root filesystem of a process making it possible to
@@ -180,7 +200,7 @@ LXC allows various backing stores, most notably ZFS and Btrfs
 which make it very easy to enable container snapshotting
 and streaming backups.
 
-\subsection{Docker and Rocket}
+\subsubsection{Docker and Rocket}
 
 Docker started off as a way to automate container deployment and
 configuration using containers and control groups present in Linux
@@ -188,7 +208,7 @@ kernel. As Docker started to add features that CoreOS developers
 deemed excessive an alternative project Rocket was founded
 \footnote{\url{http://www.theregister.co.uk/2014/12/03/coreos_rocket_deep_dive/}}.
 
-\subsection{CoreOS and Ubuntu Core}
+\subsubsection{CoreOS and Ubuntu Core}
 
 CoreOS \footnote{https://coreos.com/} is a rearchitected Linux
 distribution which provides minimalist foundation to run containers.
@@ -207,7 +227,7 @@ Snappy is also plays important role in Ubuntu Phone ecosystem.
 Snappy uses OverlayFS (?) to implement transactional updates.
 
 
-\subsection{OverlayFS}
+\subsubsection{OverlayFS}
 
 OverlayFS is a feature introduced in Linux 3.18 which makes it
 possible to merge contents of two separate mountpoints on the fly.
@@ -215,7 +235,7 @@ OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of
 read-only SquashFS filesystem
 \footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
 
-\subsection{LVM, mdadm and dmraid}
+\subsubsection{LVM, mdadm and dmraid}
 
 Ext4 has been primary filesystem for Linux based workstations and
 servers for a while. It provides filesystem primitives such as files,
@@ -236,7 +256,7 @@ addresses to corresponding disk's physical address.
 The snapshotting feature of LVM however has been claimed to be buggy
 \footnote{http://lwn.net/Articles/522073/}.
 
-\subsection{Btrfs and ZFS}
+\subsubsection{Btrfs and ZFS}
 
 Btrfs and ZFS both are modern copy on write filesystems
 which also fill in the role of volume manager.
@@ -258,12 +278,14 @@ seriously hamper performance of database engines.
 
 During snapshot send/receive an optimal parent snapshot is
 identified and that is used as basis for the differential snapshot.
-The Btrfs snapshot stream contains filesystem operations that are indended to be replayed on a clone of the parent subvolume:
+The Btrfs snapshot stream contains filesystem operations that are
+indended to be replayed on a clone of the parent subvolume:
 create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
 \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
 close file, write to file, set/remove extended attributes,
 truncate file, \emph{chmod}, \emph{chown}
 \footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
+
 
 GRUB (GRand Unified Bootloader)
 \footnote{\url{https://bugzilla.redhat.com/show_bug.cgi?id=748071}}
@@ -300,7 +322,7 @@ subvolume naming scheme:
 root filesystem is placed in subvolume named \emph{@}
 and home directories in a subvolume called \emph{@home}.
 
-\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
+\subsubsection{apt-btrfs-snapshot and yum-fs-snapshot}
 
 In Ubuntu package repositories there is available
 \emph{apt-btrfs-snapshot}
@@ -317,7 +339,7 @@ Red Hat based distributions.
 These approaches make it possible to boot into previous snapshots
 in case there are issues with the updated packages.
 
-\subsection{FreeNAS, Rockstor and OpenMediaVault}
+\subsubsection{FreeNAS, Rockstor and OpenMediaVault}
 
 FreeNAS is a FreeBSD \footnote{http://www.freenas.org/}
 based distribution which builds a complete NAS solution on top of
@@ -334,7 +356,7 @@ NFS (UNIX file shares) and filesystem aided snapshots.
 
 
 
-\subsection{rsync and rsnapshot}
+\subsubsection{rsync and rsnapshot}
 
 rsync is an open source utility designed for
 fast incremental file transfer.
@@ -350,7 +372,7 @@ extra disk space is consumed. Applying classical rsync on top of
 the clone only increments by the disk usage of changed files.
 
 
-\subsection{OpenWrt and DD-WRT}
+\subsubsection{OpenWrt and DD-WRT}
 
 Most Linux based open-source router firmwares originate from
 Linksys WRT54G wireless router.
@@ -393,7 +415,7 @@ SquashFS partition. Due to lack of redundancy in consumer-grade routers
 an interrupted firmware upgrade usually renders device unfit for use. This is also known as \emph{bricking} in embedded developer jargon.
 
 
-\subsection{Android}
+\subsubsection{Android}
 
 Android ROM images are typically distributed as zip files which contain 
 binary blobs for modem and bootloader in addition to snapshots of the
@@ -418,7 +440,7 @@ of the software update process.
 
 
 
-\subsection{OpenStack}
+\subsubsection{OpenStack}
 
 OpenStack is a free and open-source cloud computing software platform
 which is composed of several components of which most noteworthy for current work are:
@@ -433,7 +455,9 @@ Glance BitTorrent delivery enables BitTorrent support for transferring the image
 
 
 
-\chapter{Analysis}
+\section{Analysis}
+
+\subsection{Current issues}
 
 The initial task was to use Ubuntu as operating system basis
 for schools due to rich set of both open-source and
@@ -465,7 +489,7 @@ it does not provide dependency tracking nor fetching
 packages from remote locations which are implemented by APT.
 APT significantly simplifies the installation of software
 components by downloading packages from different sources
-and checking package dependencies prior installation with \emph{dpkg}.
+and checking package dependencies prior installation.
 
 Ubuntu Software Center builds another abstraction on top of APT,
 while hiding libraries and other system components it enables
@@ -487,30 +511,10 @@ in that case APT crashes with segmentation fault
 \footnote{http://askubuntu.com/questions/532200/14-04-lts-apt-get-segfault}
 and currently the only known solution to the problem
 involves deleting package lists and running \emph{apt-get update} again.
-
-
-faulty scripting in packages
+Several faulty packaging scripts were stumbled on,
+for example it was not possible to remove certain versions of LibreOffice packages
+and manual intervention was necessary
 \footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367#post5216367}}.
-
-bandwidth overhead etc.
-
-
-Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
-have proven to be especially troublesome due to the fact that system libraries
-and files are updated and interrupted release upgrade may leave system
-in an unusable state.
-Even so separate filesystem for home directories has
-proven to be effective method against wiping the whole disk
-during reinstall of Ubuntu.
-
-
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\input{dia/pooled-partitioning.tex}}
-\caption{Pooled partitioning}
-\label{fig:pooled-partitioning}
-\end{figure}
-
 
 Debian community has been working hard to provide differential updates for
 the packages, but as of February 2015 the efforts have proven fruitless.
@@ -521,6 +525,23 @@ Fedora community has however successfully deployed differential packages
 \footnote{http://fedoraproject.org/wiki/Features/Presto},
 thus reducing the amount of data needed to be transferred during an package update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern, especially for low-bandwidth links.
 
+Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
+have proven to be especially troublesome due to the fact that system libraries
+and files are updated and interrupted release upgrade may leave system
+in an unusable state.
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/traditional-partitioning.tex}}
+\caption{Partitioning with separate /home}
+\label{fig:traditional-partitioning}
+\end{figure}
+
+Even so separate filesystem for home directories has
+proven to be effective method against wiping the whole disk
+during reinstall of Ubuntu.
+
 Puppet, SaltStack, Chef, Ansible and other traditional configuration
 management fit best the scenario where each node has slightly different
 configuration and it makes sense to keep them separate. However
@@ -528,7 +549,38 @@ provisioning very similar nodes with for instance Foreman has obvious
 overhead - each node has to fetch updated packages independently from
 the same APT repositories, same has to be done for application software.
 
-\chapter{Prototype}
+For classroom deployment cloning has been used in the past:
+Windows, Ubuntu or both are installed on a physical template machine.
+Template machine is thoroughly tested.
+Tools such as Clonezilla or Symantec Ghost are used to transfer the
+harddisk image to the other machines.
+As the whole procedure is a complex undertaking
+it is usually performed once a year in summer especially for educational
+
+The workflow for the prototype is described in Figure
+~\ref{fig:butterknife-workflow}
+
+
+
+
+
+\section{Prototype}
+
+
+The prototype draws inspiration from embedded computers
+where certain guarantees have to be provided.
+
+
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/workflow.tex}}
+\caption{Workflow for btrfs snapshot based software deployment}
+\label{fig:butterknife-workflow}
+\end{figure}
+
+
+
 
 
 \begin{figure}[!htb]
@@ -607,34 +659,53 @@ The instructions for setting up similar infrastructure
 are also present at GitHub and are constantly being improved.
 Small testing community is already emerging.
 
+
+
+The used partitioning scheme is described in Figure ~\ref{fig:pooled-partitioning}
+is inspired by Ubuntu and Lennart Poettering's article.
+The whole block device is allocated to single Btrfs filesystem
+which is always mounted at \emph{/var/butterknife/pool} making
+it possible to easily iterate over templates and root filesystem instances
+present in the machine.
+
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{dia/workflow.tex}}
-\caption{Workflow for btrfs snapshot based software deployment}
-\label{fig:digraph}
+\scalebox{0.5}{\input{dia/pooled-partitioning.tex}}
+\caption{Pooled partitioning}
+\label{fig:pooled-partitioning}
 \end{figure}
 
 
+\subsection{Benchmarks}
+
+As root filesystem contains numerous small files significant
+slowdown was observed is spinning disk was used on the either
+side.
+The throughput averaged ~37MB/s while
+streaming Ubuntu root filesystem to/from
+Western Digital WD40EFRX without using encryption or compression.
+Using SSD-s on both ends averaged around 100MB/s
+due to gigabit ethernet used for benchmarking.
 
 
-\chapter{Conclusions and Future work}
+\section{Conclusions and Future work}
 
-\section{Conclusions}
+\subsection{Conclusions}
 
 The implementation exceeds rather than  the needs of educational 
 
 
 
-\section{Future work}
+\subsection{Future work}
 
-\subsection{BitTorrent integration}
+\subsubsection{BitTorrent integration}
 
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{dia/butterknife-usecase-bittorrent.tex}}
 \caption{Possible load distribution scenario using BitTorrent}
-\label{fig:digraph}
+\label{fig:butterknife-usecase-bittorrent}
 \end{figure}
 
 BitTorrent is a protocol designed for peer-to-peer file transfer.
@@ -706,7 +777,7 @@ these properties could of course be transferred
 using additional manifest file.
 
 
-\subsection{Alternative filesystem layouts}
+\subsubsection{Alternative filesystem layouts}
 
 Lennart Poettering, an controversial Free Software developer has outlined a method
 \footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}

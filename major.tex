@@ -118,9 +118,8 @@ Currently alternative transport
 RAET (Reliable Asynchronous Event Transport)
 is in development and it is designed Salt in mind.
 RAET attempts to address more complex message routing
-schemes which are not possible with ZeroMQ.
-
-
+schemes which are not possible with ZeroMQ
+\footnote{\url{http://docs.saltstack.com/en/latest/topics/transports/raet/index.html}}.
 
 
 \subsubsection{Clonezilla, Symantec Ghost, Acronis True Image}
@@ -457,13 +456,15 @@ Glance BitTorrent delivery enables BitTorrent support for transferring the image
 
 \section{Analysis}
 
-\subsection{Current issues}
+\subsection{Initial task}
 
 The initial task was to use Ubuntu as operating system basis
 for schools due to rich set of both open-source and
 proprietary software components available in Ubuntu ecosystem.
 
-Initially the machine deployment was a tedious task involving
+\subsection{Problems with current approach}
+
+So far the machine deployment was a tedious task involving
 manual labour:
 The Ubuntu 12.04 LTS image had to be downloaded from the Internet
 and transferred to a memory stick.
@@ -555,11 +556,27 @@ Template machine is thoroughly tested.
 Tools such as Clonezilla or Symantec Ghost are used to transfer the
 harddisk image to the other machines.
 As the whole procedure is a complex undertaking
-it is usually performed once a year in summer especially for educational
+it is usually performed once a year in summer especially for
+educational institutions.
+
+In fact cloning was used by some of the participating
+schools - for example at Mustamäe Gümnaasium.
 
 The workflow for the prototype is described in Figure
 ~\ref{fig:butterknife-workflow}
 
+
+
+\subsection{Towards better solution}
+
+Considering the needs of the commercial customers and
+experience gained in the first iteration of the migration project
+following list of requirements were specified for next iteration.
+
+The home directories must remain intact
+during software updates.
+The software upgrades have to be atomic,
+meaning that interrupted 
 
 
 

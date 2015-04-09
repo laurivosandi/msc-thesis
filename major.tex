@@ -639,7 +639,8 @@ The implementation exceeds rather than  the needs of educational
 
 BitTorrent is a protocol designed for peer-to-peer file transfer.
 A .torrent file contains metadata about the content in question and a
-tracker URL - that is the service which is used to discover other peers in the swarm, that's 
+tracker URL - that is the service which is used to discover other peers in the
+pool of participating nodes also known as swarm.
 BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
 BitTorrent protocol does not specify minimal piece length
 \footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
@@ -651,7 +652,7 @@ which means the piece size is correlated to content size
 \footnote{\url{https://wiki.vuze.com/w/Torrent_Piece_Size}}.
 
 For multi-file torrents the files in the directory tree are handled
-as a continuous stream of data of the files concatenated to each other,
+as a continuous stream of data of the concatenated files,
 thus changing size of a file that happens to be placed in the beginning of a torrent
 file results in completely different checksums for the whole torrent.
 Such approach is reasonable for rarely changing data, but for current usecase
@@ -664,46 +665,49 @@ however small files add significant overhead due to padding files.
 Compression of pieces sent on the wire has been proposed
 \footnote{\url{https://wiki.theory.org/BitTorrentWishList}}.
 This could resolve the overhead issue introduced due to padding files.
-The problem could also be solved simply by introducing new file mode.
+The problem of piece alignment could also be addressed
+simply by introducing new file mode.
 
-
-
-Btrfs uses crc32c for checksumming and support for alternative checksum algorithms is planned.
+Btrfs uses crc32c for checksumming and support for additional
+checksum algorithms, namely SHA1 is planned
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/Project_ideas#More_checksumming_algorithms}}.
 Current on-disk format supports up to 256-bit hash checksum per
-metadata block and arbitrary count of blocks for per-block checksums.
+metadata block and arbitrary count of hashes for per-block checksums.
 \footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#What_checksum_function_does_Btrfs_use.3F}}
-As of November 2013 Btrfs defaults to 16kB or page size whichever
-is larger.
+As of November 2013 Btrfs defaults to 16kB or page size
+whichever is larger.
 On most Linux workstation page size is set to 4kB, thus 16kB block
 size takes precedence.
-\footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}
+\footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}.
 
 As online deduplication is in works for Btrfs it makes sense to
 combine the two, implementing additional \emph{ioctl} for Btrfs in
 order to perform block lookup by checksum is trivial task.
 This could make it possible to implement high-performance
-BitTorrent seedbox which takes advantage of Btrfs metadata.
+BitTorrent implementation which takes advantage of Btrfs metadata.
 
-BitTorrent-style checksumming would permit sharing platform-independent
+Aligned checksumming would permit sharing platform-independent
 (images; fontconfig cache; dconf database; LaTeX packages;
 Bash, Python, Ruby, Perl, Lua, Java source and bytecode)
 file chunks between machines of different architecture (amd64, i386, armel, armhf)
 from arbitrary snapshots.
 
-Generating .torrent corresponding to a root filesystem has other issues
-as well.
+Generating .torrent corresponding to a root filesystem
+has other issues as well.
 Piece size of 16kB results in a torrent file
 exceeding 10MB for Ubuntu root filesystem and that didn't even
 include padding files required to align piece boundary to file beginning.
 Most BitTorrent client implementations fail to handle .torrent
 files of such size resulting in out of memory errors or freezes.
-Also BitTorrent currently does not handle symlinks or POSIX
-filesystem permissions and access control lists
+Also BitTorrent currently does not handle symlinks,
+POSIX filesystem permissions and access control lists
 \footnote{\url{http://users.suse.com/~agruen/acl/linux-acls/online/}}.
 
-This leads us to believe that
-these properties could of course be transferred
-using additional manifest file.
+This leads us to believe that these properties be transferred
+using additional manifest file, making use of .torrent file redundant.
+
+Alternative option would be to use BitTorrent to simply
+transfer \emph{btrfs send} bitstreams.
 
 
 \subsection{Alternative filesystem layouts}

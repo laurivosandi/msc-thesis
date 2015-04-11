@@ -1,7 +1,7 @@
 % Graphic for TeX using PGF
-% Title: /home/lauri/Projektid/blog/pages/cloning/dia/workflow-en.dia
+% Title: /home/lauri/msc-thesis/dia/workflow.dia
 % Creator: Dia v0.97.2
-% CreationDate: Thu Feb 26 18:06:28 2015
+% CreationDate: Sat Apr 11 21:29:01 2015
 % For: lauri
 % \usepackage{tikz}
 % The following commands are not supported in PSTricks at present
@@ -21,55 +21,55 @@
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,2.000000\du){Bootstrapping system};
+\node at (7.000000\du,2.000000\du){Bootstrap stage};
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (1.000000\du,3.000000\du)--(1.000000\du,8.000000\du)--(15.000000\du,8.000000\du)--(15.000000\du,3.000000\du)--cycle;
+\fill (1.000000\du,3.000000\du)--(1.000000\du,8.000000\du)--(13.000000\du,8.000000\du)--(13.000000\du,3.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (1.000000\du,3.000000\du)--(1.000000\du,8.000000\du)--(15.000000\du,8.000000\du)--(15.000000\du,3.000000\du)--cycle;
+\draw (1.000000\du,3.000000\du)--(1.000000\du,8.000000\du)--(13.000000\du,8.000000\du)--(13.000000\du,3.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,4.913333\du){Set up bootstramp subvolume};
+\node at (7.000000\du,4.525278\du){Prepare template,};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,5.689444\du){(server address, TLS certificates,};
+\node at (7.000000\du,5.301389\du){install and configure software,};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,6.465556\du){GPG public keys).};
+\node at (7.000000\du,6.077500\du){add Puppet certificate,};
+% setfont left to latex
+\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
+\pgfsetstrokecolor{dialinecolor}
+\node at (7.000000\du,6.853611\du){add GPG keys};
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (1.000000\du,10.000000\du)--(1.000000\du,15.000000\du)--(15.000000\du,15.000000\du)--(15.000000\du,10.000000\du)--cycle;
+\fill (1.000000\du,10.000000\du)--(1.000000\du,15.000000\du)--(13.000000\du,15.000000\du)--(13.000000\du,10.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (1.000000\du,10.000000\du)--(1.000000\du,15.000000\du)--(15.000000\du,15.000000\du)--(15.000000\du,10.000000\du)--cycle;
+\draw (1.000000\du,10.000000\du)--(1.000000\du,15.000000\du)--(13.000000\du,15.000000\du)--(13.000000\du,10.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,11.525278\du){Dump bootstrap image to};
+\node at (7.000000\du,11.913333\du){Boot provisioning image on};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,12.301389\du){target machine harddisk};
+\node at (7.000000\du,12.689444\du){target machine over PXE};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,13.077500\du){or optionally boot multiple machines};
-% setfont left to latex
-\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
-\pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,13.853611\du){over PXE.};
+\node at (7.000000\du,13.465556\du){of from USB memory stick};
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
@@ -78,37 +78,37 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsend{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (8.000000\du,8.050232\du)--(8.000000\du,9.949768\du);
+\draw (7.000000\du,8.050232\du)--(7.000000\du,9.949768\du);
 }
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (1.000000\du,17.000000\du)--(1.000000\du,22.000000\du)--(15.000000\du,22.000000\du)--(15.000000\du,17.000000\du)--cycle;
+\fill (1.000000\du,17.000000\du)--(1.000000\du,22.000000\du)--(13.000000\du,22.000000\du)--(13.000000\du,17.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (1.000000\du,17.000000\du)--(1.000000\du,22.000000\du)--(15.000000\du,22.000000\du)--(15.000000\du,17.000000\du)--cycle;
+\draw (1.000000\du,17.000000\du)--(1.000000\du,22.000000\du)--(13.000000\du,22.000000\du)--(13.000000\du,17.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,18.525278\du){Deploy read-only};
+\node at (7.000000\du,18.525278\du){Deploy template on the machines,};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,19.301389\du){operating system subvolume};
+\node at (7.000000\du,19.301389\du){change hostname,};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,20.077500\du){to the machines.};
+\node at (7.000000\du,20.077500\du){join to domain,};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (8.000000\du,20.853611\du){Reconfigure bootloader to launch OS.};
+\node at (7.000000\du,20.853611\du){reconfigure bootloader to launch OS.};
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
@@ -117,43 +117,47 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsend{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (8.000000\du,15.050232\du)--(8.000000\du,16.949768\du);
+\draw (7.000000\du,15.050232\du)--(7.000000\du,16.949768\du);
 }
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (28.000000\du,3.000000\du)--(28.000000\du,8.000000\du)--(42.000000\du,8.000000\du)--(42.000000\du,3.000000\du)--cycle;
+\fill (25.000000\du,3.000000\du)--(25.000000\du,8.000000\du)--(37.000000\du,8.000000\du)--(37.000000\du,3.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (28.000000\du,3.000000\du)--(28.000000\du,8.000000\du)--(42.000000\du,8.000000\du)--(42.000000\du,3.000000\du)--cycle;
+\draw (25.000000\du,3.000000\du)--(25.000000\du,8.000000\du)--(37.000000\du,8.000000\du)--(37.000000\du,3.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (35.000000\du,5.301389\du){Connect to server and wait};
+\node at (31.000000\du,4.913333\du){Connect to Butterknife server};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (35.000000\du,6.077500\du){for differential snapshots.};
+\node at (31.000000\du,5.689444\du){and wait for};
+% setfont left to latex
+\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
+\pgfsetstrokecolor{dialinecolor}
+\node at (31.000000\du,6.465556\du){differential snapshots};
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (18.000000\du,10.000000\du)--(18.000000\du,15.000000\du)--(32.000000\du,15.000000\du)--(32.000000\du,10.000000\du)--cycle;
+\fill (16.000000\du,10.000000\du)--(16.000000\du,15.000000\du)--(28.000000\du,15.000000\du)--(28.000000\du,10.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (18.000000\du,10.000000\du)--(18.000000\du,15.000000\du)--(32.000000\du,15.000000\du)--(32.000000\du,10.000000\du)--cycle;
+\draw (16.000000\du,10.000000\du)--(16.000000\du,15.000000\du)--(28.000000\du,15.000000\du)--(28.000000\du,10.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (25.000000\du,12.689444\du){Reboot to new subvolume.};
+\node at (22.000000\du,12.689444\du){Reboot to new subvolume};
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
@@ -162,49 +166,53 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsend{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\pgfpathmoveto{\pgfpoint{15.049490\du}{19.640275\du}}
-\pgfpatharc{74}{35}{11.858541\du and 11.858541\du}
+\pgfpathmoveto{\pgfpoint{13.049108\du}{19.727669\du}}
+\pgfpatharc{75}{29}{9.842589\du and 9.842589\du}
 \pgfusepath{stroke}
 }
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (28.000000\du,17.000000\du)--(28.000000\du,22.000000\du)--(42.000000\du,22.000000\du)--(42.000000\du,17.000000\du)--cycle;
+\fill (25.000000\du,17.000000\du)--(25.000000\du,22.000000\du)--(37.000000\du,22.000000\du)--(37.000000\du,17.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (28.000000\du,17.000000\du)--(28.000000\du,22.000000\du)--(42.000000\du,22.000000\du)--(42.000000\du,17.000000\du)--cycle;
+\draw (25.000000\du,17.000000\du)--(25.000000\du,22.000000\du)--(37.000000\du,22.000000\du)--(37.000000\du,17.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (35.000000\du,19.301389\du){Reconfigure bootloader to};
+\node at (31.000000\du,19.301389\du){Reconfigure bootloader to};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (35.000000\du,20.077500\du){boot new snapshot.};
+\node at (31.000000\du,20.077500\du){boot new snapshot};
 \definecolor{dialinecolor}{rgb}{1.000000, 1.000000, 1.000000}
 \pgfsetfillcolor{dialinecolor}
-\fill (38.000000\du,10.000000\du)--(38.000000\du,15.000000\du)--(52.000000\du,15.000000\du)--(52.000000\du,10.000000\du)--cycle;
+\fill (34.000000\du,10.000000\du)--(34.000000\du,15.000000\du)--(47.000000\du,15.000000\du)--(47.000000\du,10.000000\du)--cycle;
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
 \pgfsetmiterjoin
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\draw (38.000000\du,10.000000\du)--(38.000000\du,15.000000\du)--(52.000000\du,15.000000\du)--(52.000000\du,10.000000\du)--cycle;
+\draw (34.000000\du,10.000000\du)--(34.000000\du,15.000000\du)--(47.000000\du,15.000000\du)--(47.000000\du,10.000000\du)--cycle;
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (45.000000\du,12.301389\du){Download and validate image,};
+\node at (40.500000\du,11.913333\du){Download and apply};
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (45.000000\du,13.077500\du){optionally over multicast or P2P.};
+\node at (40.500000\du,12.689444\du){differential snapshot};
+% setfont left to latex
+\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
+\pgfsetstrokecolor{dialinecolor}
+\node at (40.500000\du,13.465556\du){over HTTPS};
 \pgfsetlinewidth{0.100000\du}
 \pgfsetdash{}{0pt}
 \pgfsetdash{}{0pt}
@@ -213,26 +221,11 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsstart{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\pgfpathmoveto{\pgfpoint{27.950110\du}{5.675501\du}}
-\pgfpatharc{237}{192}{6.723537\du and 6.723537\du}
-\pgfusepath{stroke}
-}
-\pgfsetlinewidth{0.100000\du}
-\pgfsetdash{}{0pt}
-\pgfsetdash{}{0pt}
-\pgfsetbuttcap
-{
-\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
-\pgfsetfillcolor{dialinecolor}
-% was here!!!
-\pgfsetarrowsend{to}
-\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
-\pgfsetstrokecolor{dialinecolor}
-\pgfpathmoveto{\pgfpoint{44.870667\du}{9.950218\du}}
-\pgfpatharc{347}{305}{6.860399\du and 6.860399\du}
+\pgfpathmoveto{\pgfpoint{24.952749\du}{5.365395\du}}
+\pgfpatharc{242}{188}{6.115016\du and 6.115016\du}
 \pgfusepath{stroke}
 }
 \pgfsetlinewidth{0.100000\du}
@@ -243,11 +236,11 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsstart{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\pgfpathmoveto{\pgfpoint{42.049045\du}{18.901522\du}}
-\pgfpatharc{55}{16}{7.019442\du and 7.019442\du}
+\pgfpathmoveto{\pgfpoint{40.378771\du}{9.949619\du}}
+\pgfpatharc{347}{299}{6.688792\du and 6.688792\du}
 \pgfusepath{stroke}
 }
 \pgfsetlinewidth{0.100000\du}
@@ -258,15 +251,30 @@
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetfillcolor{dialinecolor}
 % was here!!!
-\pgfsetarrowsend{to}
+\pgfsetarrowsstart{stealth}
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\pgfpathmoveto{\pgfpoint{25.129248\du}{15.049431\du}}
-\pgfpatharc{167}{125}{6.860399\du and 6.860399\du}
+\pgfpathmoveto{\pgfpoint{37.043714\du}{19.357246\du}}
+\pgfpatharc{62}{14}{6.688792\du and 6.688792\du}
+\pgfusepath{stroke}
+}
+\pgfsetlinewidth{0.100000\du}
+\pgfsetdash{}{0pt}
+\pgfsetdash{}{0pt}
+\pgfsetbuttcap
+{
+\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
+\pgfsetfillcolor{dialinecolor}
+% was here!!!
+\pgfsetarrowsstart{stealth}
+\definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
+\pgfsetstrokecolor{dialinecolor}
+\pgfpathmoveto{\pgfpoint{21.893016\du}{15.049134\du}}
+\pgfpatharc{171}{120}{6.223243\du and 6.223243\du}
 \pgfusepath{stroke}
 }
 % setfont left to latex
 \definecolor{dialinecolor}{rgb}{0.000000, 0.000000, 0.000000}
 \pgfsetstrokecolor{dialinecolor}
-\node at (35.000000\du,2.000000\du){Production system};
+\node at (31.000000\du,2.000000\du){Live stage};
 \end{tikzpicture}

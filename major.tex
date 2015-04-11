@@ -20,7 +20,8 @@ TODO
 \end{abstract}
 
 
-
+https://www.embeddedarm.com/about/resource.php?item=459
+http://www.denx.de/static/Diplomarbeit-MK-1.0-net.pdf
 
 
 \section{Introduction}
@@ -62,9 +63,9 @@ labour.
 The work produced a novel method of deploying and maintaining Linux
 based workstations in an guaranteed and secure manner.
 
-\subsection{Current approaches}
+\subsection{Related}
 
-There are various tools used to manage Linux based workstations.
+There are various tools and technologies used to manage Linux based workstations.
 In this chapter a background of different methods is outlined.
 Subsequently a specification is derived from the needs of customers of
 the author. 
@@ -102,7 +103,7 @@ Chef is infrastructure automation tool. Chef is written in Ruby and Erlang. Chef
 
 Ansible remote management software uses SSH to connect to the nodes which
 means there is no agent running on the managed machine, this however makes
-it slightly more complicated to use Ansible no manage machines behind NAT.
+it slightly more complicated to use Ansible to manage machines behind NAT.
 Ansible is written in Python and it uses state-driven resource 
 written in YAML.
 
@@ -184,8 +185,8 @@ For instance a Python application which has modules loaded before
 chroot operation could operate without any files in the chroot,
 but shell script which relies on several executables need to have
 those utilities available in chroot as well.
-With copy-on-write and de-duplicating filesystems the problem
-how ever becomes irrelevant as root
+With copy-on-write and de-duplicating filesystems such as Btrfs and
+ZFS the problem how ever becomes irrelevant as root
 filesystem of the chroots can be duplicated with no significant overhead.
 
 LXC (Linux Containers) 
@@ -195,9 +196,9 @@ recently Linux \emph{cgroups} (control groups subsystem) which permit
 more flexible operating system level virtualization.
 Control groups are used to implement limiting, accounting
 and isolation of CPU, memory, disk I/O, network, etc resource usage.
-LXC allows various backing stores, most notably ZFS and Btrfs
-which make it very easy to enable container snapshotting
-and streaming backups.
+LXC allows various backing stores, most notably ZFS, Btrfs and
+OverlayFS which make it very easy to enable container
+snapshotting and streaming backups.
 
 \subsubsection{Docker and Rocket}
 
@@ -275,15 +276,49 @@ Btrfs supports zlib and lzo compression algorithms,
 however enabling compression for Btrfs is known to
 seriously hamper performance of database engines.
 
-During snapshot send/receive an optimal parent snapshot is
-identified and that is used as basis for the differential snapshot.
-The Btrfs snapshot stream contains filesystem operations that are
+Btrfs supports subvolumes, which makes it possible to group
+directories and files into logical units.
+As mentioned above, LXC makes use of subvolumes
+by confining the root filesystem to a Btrfs subvolume
+if Btrfs backing store is used.
+This means that root filesystem of a container
+can easily be snapshotted.
+
+In Btrfs context snapshotting is actually 
+a generalization of subvolume cloning,
+thus "subvolume", "clone" and "snapshot" may be used
+interchangeably in certain contexts.
+Due to copy-on-write architecture subsequent writes
+to the original subvolume do not affect
+the subvolume clone and there is no performance
+degradation for the original subvolume.
+
+Btrfs permits transmitting filesystem data over the network
+by a concept of \emph{btrfs send} and \emph{btrfs receive}.
+Btrfs send mandates the subvolume to be in a read-only mode,
+which means that \emph{btrfs subvol snapshot} has to be issued
+with extra \emph{-r} flag.
+The Btrfs send bitstream contains filesystem operations that are
 indended to be replayed on a clone of the parent subvolume:
 create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
 \emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
 close file, write to file, set/remove extended attributes,
 truncate file, \emph{chmod}, \emph{chown}
 \footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
+During receive a subvolume is created 
+
+Btrfs uses \emph{received\_uuid} and \emph{uuid} to
+identify snapshots for transfer.
+The \emph{received\_uuid} corresponds to the \emph{uuid} on
+the initial machine and it remains intact for any subsequent transfers.
+For differential snapshots few extra steps are taken.
+During snapshot send an optimal parent snapshot is
+identified and that is used as basis for the differential snapshot.
+On the receiving end the a read-write snapshot of the parent
+snapshot is created and filesystem operations
+are replayed on the subvolume.
+Finally corresponding \emph{received\_uuid} is set and
+\emph{ioctl} is issued to set subvolume read-only.
 
 
 GRUB (GRand Unified Bootloader)
@@ -405,13 +440,16 @@ bootloader, read-only root filesystem, read-write overlay.
 The read-only root filesystem contains SquashFS
 \footnote{http://squashfs.sourceforge.net/}
 which is highly-efficient compressed read-only filesystem that
-supports variety of compression The read-write overlay partition
+supports variety of compression algorithms.
+The read-write overlay partition
 is formatted as JFFS2 (journalling flash filesystem).
 
 This method makes it possible to: perform factory reset simply by
 formatting the JFFS2 partition and upgrading firmware by overwriting
 SquashFS partition. Due to lack of redundancy in consumer-grade routers
-an interrupted firmware upgrade usually renders device unfit for use. This is also known as \emph{bricking} in embedded developer jargon.
+an interrupted firmware upgrade usually renders device unfit for use.
+This is also known as \emph{bricking} in embedded developer jargon.
+
 
 
 \subsubsection{Android}
@@ -454,7 +492,7 @@ Glance BitTorrent delivery enables BitTorrent support for transferring the image
 
 
 
-\section{Analysis}
+\section{Background}
 
 \subsection{Initial task}
 
@@ -539,7 +577,8 @@ in an unusable state.
 \label{fig:traditional-partitioning}
 \end{figure}
 
-Even so separate filesystem for home directories has
+Even so separate filesystem for home directories
+as described in Figure~\ref{fig:traditional-partitioning} has
 proven to be effective method against wiping the whole disk
 during reinstall of Ubuntu.
 
@@ -560,53 +599,145 @@ it is usually performed once a year in summer especially for
 educational institutions.
 
 In fact cloning was used by some of the participating
-schools - for example at Mustamäe Gümnaasium.
-
-The workflow for the prototype is described in Figure
-~\ref{fig:butterknife-workflow}
+schools - for example Alan Õis, the IT-support at Mustamäe Gümnaasium
+used Clonezilla to set up his classrooms.
 
 
-
-\subsection{Towards better solution}
+\subsection{Specification}
 
 Considering the needs of the commercial customers and
 experience gained in the first iteration of the migration project
 following list of requirements were specified for next iteration.
 
-The home directories must remain intact
-during software updates.
-The software upgrades have to be atomic,
-meaning that interrupted 
+\begin{enumerate}
+\item The solution has to support all major Linux distributions - Ubuntu, Fedora, Red Hat, etc.
+\item The software upgrades have to be atomic, in other words interrupted updates can not render a workstation unusable. 
+\item Software upgrades must retain domain join without having to join machine to a domain.
+\item The home directories must remain intact during software updates.
+\end{enumerate}
 
+\noindent Following requirements were specified for the provisioning stage.
 
+\begin{enumerate}
+\item Preboot execution environment (PXE) support
+\item Bootable off USB memory stick
+\item Bootable off CD-R
+\end{enumerate}
 
+\noindent Following requirements were specified for the server:
 
-\section{Prototype}
+\begin{enumerate}
+\item It has to be possible to run a central server for all nodes
+\item It has to be possible to run a local instance
+\item Push and pull capabilities to transfer templates between servers
+\end{enumerate}
 
+\noindent Following requirements were specified for security:
+
+\begin{enumerate}
+\item As initial provisioning can be assumed to be done on premises,
+man-in-the-middle attacks can be ruled out in that
+provisioning stage.
+\item Subsequent incremental snapshots have to be verified
+by means of asymmetric keys.
+\item Consistent methods for root filesystem template fingerprinting have to be provided
+\end{enumerate}
+
+\section{Butterknife Design and Architecture}
 
 The prototype draws inspiration from embedded computers
 where certain guarantees have to be provided.
-
-
+The workflow for the prototype is described in
+Figure~\ref{fig:butterknife-workflow}.
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{dia/workflow.tex}}
-\caption{Workflow for btrfs snapshot based software deployment}
+\caption{Workflow for Btrfs snapshot based software deployment}
 \label{fig:butterknife-workflow}
 \end{figure}
 
+\noindent The prototype consists of three major components:
+
+\begin{enumerate}
+\item Helpers to build a template.
+\item Python based HTTP API to serve the snapshots.
+\item Buildroot based provisioning image.
+\item DBus services for applying incremental snapshots online.
+\end{enumerate}
 
 
 
+
+
+
+\subsection{Template helpers}
+
+LXC containers are used to bootstrap the template for provisioning.
+Creating container with Btrfs backing store (lxc-create -B btrfs)
+on top of a Btrfs filesystem places the container in an
+isolated subvolume which makes it easy to snapshot the container.
+Within the container \emph{puppet apply} and similar methods can be used
+to take advantage of already existing configuration management know-how.
+Otherwise traditional manual labour can be employed to set up the template: installing packages, tweaking configuration files etc.
+
+During the release phase the LXC container is stopped, pre-release
+scripts are executed to clean up package cache and temporary files.
+Then a read-only Btrfs snapshot is generated from the container root filesystem.
+At this point new snapshot becomes available via HTTP API.
+
+
+
+\subsection{HTTP API}
+
+Falcon HTTP API from Rackspace was used to build the
+API for Butterknife server
+\footnote{\url{http://falconframework.org/}}.
+The HTTP API serves information about templates
+available in the server's \emph{/var/butterknife/pool}.
+The API exposes several methods:
+
+\begin{enumerate}
+\item \emph{/api/template/}
+\item \emph{/api/template/\{name\}/arch/\{arch\}/version/}
+\item \emph{/api/template/\{name\}/arch/\{arch\}/version/\{version\}/stream/}
+\end{enumerate}
+
+The \emph{name} of a template follows naming scheme of DBus objects
+incorporating fully qualified domain name in reverse and the identifier
+of the object.
+The \emph{version} refers to the snapshot of the template.
+The \emph{arch} refers to target architecture which is normalized
+to \emph{x86} for 32-bit and \emph{x86\_64} for 64-bit Intel x86 machines.
+For example the Btrfs subvolume stream URL for
+snap42 of the 32-bit EduWorkstation would be
+
+\emph{/api/template/com.koodur.butterknife.EduWorkstation/arch/x86/version/snap42/stream}.
+
+Note that the stream URL also accepts parent argument,
+so incremental snapshot can be received simply by appending
+\emph{?parent=snap41}.
+The unicast snapshot transfer topology
+shown in Figure~\ref{fig:butterknife-usecase-http}
+suffers obvious scalability issue, the uplink of the server
+is eventually congested and throughput per node
+decreases with every additional node.
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.5}{\input{dia/butterknife-usecase-http.tex}}
 \caption{Deployment over HTTP}
-\label{fig:butterknife-usercase-http}
+\label{fig:butterknife-usecase-http}
 \end{figure}
 
+Multicast is used to resolve the scalability issue of
+the initial provisioning stage.
+Snapshot transfer topology with off-site
+server is shown in Figure~\ref{fig:butterknife-usecase-multicast}.
+In this case the snapshot is transferred over HTTP from
+the server by one of the participating nodes.
+That node proxies the stream to local LAN segment using multicast.
+All the other nodes are receiving over multicast
 
 \begin{figure}[!htb]
 \centering
@@ -615,6 +746,8 @@ where certain guarantees have to be provided.
 \label{fig:butterknife-usecase-multicast}
 \end{figure}
 
+
+\subsection{Provisioning image}
 
 Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
 operating system. With Debian and Ubuntu the resulting PXE bootable image
@@ -651,34 +784,7 @@ as only method of verification of the source is the certificate
 authority chain verified by \emph{curl} during the Btrfs snapshot
 retrieval.
 
-LXC containers are used to bootstrap the template for provisioning.
-Creating container with Btrfs backing store (lxc-create -B btrfs)
-on top of a Btrfs filesystem places the container in an
-isolated subvolume which makes it easy to snapshot the container.
-Within the container \emph{puppet apply} and similar methods can be used
-to take advantage of already existing configuration management know-how.
-Otherwise traditional manual labour can be employed to set up the template: installing packages, tweaking configuration files etc.
-
-During the release phase the LXC container is stopped, pre-release
-scripts are executed to clean up package cache and temporary files.
-Then a read-only Btrfs snapshot is generated from the container root filesystem.
-At this point new snapshot becomes available for other nodes.
-
-
-
-For running nodes a DBus service was written to poll the snapshot server
-for updates and another DBus service was written in Python to notify user
-about available updates.
-
-Source code of the solution was published at GitHub
-\footnote{https://github.com/v6sa/butterknife}.
-The instructions for setting up similar infrastructure
-are also present at GitHub and are constantly being improved.
-Small testing community is already emerging.
-
-
-
-The used partitioning scheme is described in Figure ~\ref{fig:pooled-partitioning}
+The used partitioning scheme is described in Figure~\ref{fig:pooled-partitioning}
 is inspired by Ubuntu and Lennart Poettering's article.
 The whole block device is allocated to single Btrfs filesystem
 which is always mounted at \emph{/var/butterknife/pool} making
@@ -693,11 +799,21 @@ present in the machine.
 \end{figure}
 
 
+\subsection{DBus services}
+
+For running nodes a DBus service was written to poll the snapshot server
+for updates and another DBus service was written in Python to notify user
+about available updates.
+
+
+
+
+
+
 \subsection{Benchmarks}
 
 As root filesystem contains numerous small files significant
-slowdown was observed is spinning disk was used on the either
-side.
+slowdown was observed is spinning disk was used on the either side.
 The throughput averaged ~37MB/s while
 streaming Ubuntu root filesystem to/from
 Western Digital WD40EFRX without using encryption or compression.
@@ -709,14 +825,90 @@ due to gigabit ethernet used for benchmarking.
 
 \subsection{Conclusions}
 
-The implementation exceeds rather than  the needs of educational 
+The implementation satisfies, exceeds to be precise,
+the requirements of educational institutions.
+
+Source code of the solution was published at GitHub
+\footnote{https://github.com/v6sa/butterknife}.
+The instructions for setting up similar infrastructure
+are provided at GitHub and are constantly being improved.
+Small testing community is already emerging.
 
 
+\subsection{Push and pull capabilities}
 
-\subsection{Future work}
+As of kernel 3.17 there is no consistent way of transferring
+differential snapshots in a distributed Git-like fashion due to way
+\emph{btrfs receive} locates the parent subvolume.
+Whenever \emph{btrfs send} is issued, the \emph{uuid} of origin
+subvolume is bundled with the bitstream, that becomes
+the \emph{received\_uuid} on the receiving endpoint and
+new \emph{uuid} is assigned for the created subvolume.
+For incremental snapshots \emph{btrfs send} also bundles
+the \emph{uuid} of the parent subvolume,
+now \emph{btrfs receive} attempts to locate the parent
+subvolume by \emph{received\_uuid} of local subvolumes.
 
-\subsubsection{BitTorrent integration}
+This effectively restricts the workflow to one direction
+as shown in Figure~\ref{fig:btrfs-received-uuid-issue}.
+This prevents running a downstream Butterknife server and
+even more importantly it makes tricky restoring snapshot
+in scenarios where Btrfs is used for backuping.
 
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/btrfs-received-uuid-issue.tex}}
+\caption{UUID inconsistency}
+\label{fig:btrfs-received-uuid-issue}
+\end{figure}
+
+Arne Jansen, previously a Btrfs developer maintains far-progs repository
+\footnote{\url{https://www.kernel.org/pub//scm/linux/kernel/git/arne/far-progs.git}},
+which contains tools for manipulating Btrfs snapshot streams,
+this format is also known as FAR (Filesystem ARchive).
+The repository contains most notably three utilities
+\emph{fssum}, \emph{fardump} and modified version of \emph{btrfs-receive}.
+The first one, \emph{fssum} can be used to calculate checksum of a
+directory tree, making it possible to verify received snapshot,
+\emph{fssum} also has flags to omit modification times and other information that 
+in certain context may be interpreted as noise.
+The second one \emph{fardump} can be used to examine FAR stream contents
+in a human readable format.
+Finally the \emph{btrfs-receive} from \emph{far-progs} features
+two extra flags: \emph{-p} which disables
+automatic parent searching and allows user to specify which 
+subvolume to use as a parent and \emph{-d} which 
+allows specifying a custom subvolume name.
+
+Disabling parent search makes it possible to detach
+Btrfs' UUID mechanism and customize the differential snapshot logic.
+In this case care must be taken of snapshot consistency,
+applying differential snapshot on incorrect parent subvolume
+may cause data corruption or end up with a crash.
+
+\subsection{Adding BitTorrent transport}
+
+Currently only HTTP(S), multicast and their combinations are supported
+for initial provisioning stage.
+Multicast makes sense for scenarios where there is simultaneous
+control over multiple machines.
+OpenSSH is used for transferring snapshots between servers.
+The differential snapshots are primarily downloaded
+via HTTP(S) because coordinating multicast
+transfers with roaming laptops is a complex scenario.
+
+As getting consistent output from \emph{btrfs send}
+is tricky it makes sense to store the incremental snapshot
+bitstreams as files and use BitTorrent to redistribute them.
+This way \emph{received\_uuid} can be kept in sync with the origin
+
+
+BitTorrent is a protocol designed for peer-to-peer file transfer.
+
+The incremental snapshots could be transferred
+using BitTorrent, distributing the load among
+nodes.
 
 \begin{figure}[!htb]
 \centering
@@ -725,7 +917,11 @@ The implementation exceeds rather than  the needs of educational
 \label{fig:butterknife-usecase-bittorrent}
 \end{figure}
 
-BitTorrent is a protocol designed for peer-to-peer file transfer.
+
+
+
+\subsection{Deep BitTorrent integration}
+
 A .torrent file contains metadata about the content in question and a
 tracker URL - that is the service which is used to discover other peers in the
 pool of participating nodes also known as swarm.
@@ -740,14 +936,24 @@ which means the piece size is correlated to content size
 \footnote{\url{https://wiki.vuze.com/w/Torrent_Piece_Size}}.
 
 For multi-file torrents the files in the directory tree are handled
-as a continuous stream of data of the concatenated files,
+as a continuous stream of data of the concatenated files
+as shown in Figure~\ref{fig:torrent-multifile},
 thus changing size of a file that happens to be placed in the beginning of a torrent
 file results in completely different checksums for the whole torrent.
 Such approach is reasonable for rarely changing data, but for current usecase
 causes significant overhead.
 
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.35}{\input{dia/torrent-multifile.tex}}
+\caption{Multi-file torrent handles directory tree as a continous stream of data}
+\label{fig:torrent-multifile}
+\end{figure}
+
 BitComet has implemented \emph{Align File to Piece Boundary} function,
-which adds a padding file if necessary to align files to piece boundary.
+which adds a padding file if necessary to align files to piece boundary
+as shown in Figure~\ref{fig:torrent-multifile-aligned}.
 This way pieces which contain identical files retain same piece checksums,
 however small files add significant overhead due to padding files.
 Compression of pieces sent on the wire has been proposed
@@ -755,6 +961,13 @@ Compression of pieces sent on the wire has been proposed
 This could resolve the overhead issue introduced due to padding files.
 The problem of piece alignment could also be addressed
 simply by introducing new file mode.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.35}{\input{dia/torrent-multifile-aligned.tex}}
+\caption{Align File to Piece Boundary}
+\label{fig:torrent-multifile-aligned}
+\end{figure}
 
 Btrfs uses crc32c for checksumming and support for additional
 checksum algorithms, namely SHA1 is planned
@@ -793,9 +1006,6 @@ POSIX filesystem permissions and access control lists
 
 This leads us to believe that these properties be transferred
 using additional manifest file, making use of .torrent file redundant.
-
-Alternative option would be to use BitTorrent to simply
-transfer \emph{btrfs send} bitstreams.
 
 
 \subsubsection{Alternative filesystem layouts}

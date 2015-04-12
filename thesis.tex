@@ -1,34 +1,129 @@
-\documentclass{article}
+\RequirePackage{ifpdf}
+\documentclass[a4paper,11pt]{kth-mag}
+\let\newfloat\undefined
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
 \usepackage[utf8]{inputenc}
-\title{Efficient and Reliable Filesystem Snapshot Distribution}
-\author{Lauri Võsandi}
-\date{January 2015}
-\usepackage{natbib}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{modifications}
 \usepackage{graphicx}
-\usepackage{url}
 \usepackage{tikz}
+\usepackage{pgfplots}
+
+\usepackage{listings}
+\usepackage[numbers, square]{natbib}
+\bibliographystyle{IEEEtranN}
+\usepackage{color}
+\usepackage[pdfusetitle,pdftex,colorlinks]{hyperref}
+\hypersetup{pdfborder={0 0 0}}
+\hypersetup{bookmarksdepth=3}
+\hypersetup{bookmarksopen=true}
+\hypersetup{bookmarksopenlevel=1}
+\hypersetup{bookmarksnumbered=true}
+\hypersetup{colorlinks=false}
+\usepackage[toc,acronym]{glossaries}
+
+
+%% Listings
+\usepackage{listings}
+\lstset{escapechar=\%, frame=tb, basicstyle=\ttfamily, language=Java}
+\lstset{prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\rhookswarrow}}}
+\lstset{postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\rcurvearrowse\space}}}
+\lstset{breaklines=true, breakatwhitespace=false}
+\lstset{numbers=left, numberstyle=\scriptsize, firstnumber=1}
+
+%% Other
+\usepackage{enumerate}
+\usepackage{paralist}
+
+\usepackage{relsize}
+
+
+%% COMMENTS %%
+\newcommand{\TODO}[1]{\begingroup\def\thefootnote{\textcolor{red}{TODO}}\footnote{\textcolor{red}{#1}}\endgroup}
+\newcommand{\TODOP}[1]{\par\textcolor{red}{#1}\marginpar{\textcolor{red}{TODO}}}
+\newcommand{\TODOX}[1]{\textcolor{red}{#1}\marginpar{\textcolor{red}{TODO}}}
+
+\hyphenation{Butterknife}
+
+\title{Efficient and Reliable Filesystem Snapshot Distribution}
+
+\subtitle{}
+\author{Lauri Võsandi}
+\date{}
+\blurb{Master of Science Thesis in\\ Information and Communication Technology\\ Supervisor: Lars Kroll \\Examiner: Dr. Jim Dowling \\ Stockholm, Sweden, June 2015}
+\trita{TRITA-ICT-EX-2015:???}
+
+\makeglossaries
 
 \begin{document}
+\newacronym{acid}{ACID}{atomicity, consistency, isolation and durability properties}
+\newacronym{api}{API}{application programming interface}
+\newacronym{dht}{DHT}{distributed hash table}
+\newacronym{dsl}{DSL}{domain specific language}
+\newacronym{hdd}{HDD}{hard disk drive}
+\newacronym{nic}{NIC}{network interface card}
+\newacronym{p2p}{P2P}{peer-to-peer}
+\newacronym{s3}{S3}{simple storage service}
+\newacronym{sics}{SICS}{Swedish Institute of Computer Science}
+\newacronym{sla}{SLA}{service level agreement}
+\newacronym{ssd}{SSD}{solid state disk}
+\newacronym{tcp}{TCP}{transmission control protocol}
 
+
+\frontmatter
+\pagestyle{empty}
+\removepagenumbers
 \maketitle
+\selectlanguage{english}
 
-
+%
+%
+% ABSTRACT
+%
+%
 \begin{abstract}
+
+Software deployment and updates 
 
 TODO
 
 \end{abstract}
 
+\chapter*{Acknowledgements}
 
-https://www.embeddedarm.com/about/resource.php?item=459
-http://www.denx.de/static/Diplomarbeit-MK-1.0-net.pdf
+I would like to thank my examiner \emph{Dr. Jim Dowling} and my supervisor \emph{Lars Kroll} firstly for providing me with the opportunity to carry out this research and secondly for guiding me through it, as well. 
 
+Furthermore, I wish to thank \emph{Kalle Kebbinau} for providing a constant
+stream of valuable input and feedback on my work and ideas.
 
-\section{Introduction}
+I'd also like to thank international Free and Open-Source Software community
+for the immense pool of freely available components that made it possible
+to learn and build anything imaginable.
 
+\clearpage
 
-\subsection{Motivation}
+\tableofcontents*
 
+\mainmatter
+\pagestyle{newchap}
+
+\clearpage
+
+%
+%
+% INTRODUCTION
+%
+%
+
+\chapter{Introduction}
+\label{chap:intro}
+
+TODO
+
+\section{Motivation}
+\label{sec:mot}
 The foundation of current work was established while author was setting up
 the infrastructure to deploy Ubuntu 12.04 LTS on the PC-s of educational
 institutions of Tallinn as part of the ongoing efforts of Tallinn Education
@@ -58,20 +153,17 @@ but the budget is lacking and therefore manual labour has to be minimized.
 Glitch-free software update mechanism is crucial part of minimizing manual
 labour.
 
-\subsection{Contributions}
+\section{Contributions}
 
 The work produced a novel method of deploying and maintaining Linux
 based workstations in an guaranteed and secure manner.
 
-\subsection{Related}
+TODO
 
-There are various tools and technologies used to manage Linux based workstations.
-In this chapter a background of different methods is outlined.
-Subsequently a specification is derived from the needs of customers of
-the author. 
+\section{Related Work}
+\label{sec:related}
 
-
-\subsubsection{Puppet and Foreman}
+\subsection{Puppet and Foreman}
 
 Puppet is a remote management system which features its own declarative
 domain-specific language to describe the state of the configuration
@@ -97,9 +189,17 @@ tools into single unified application. Even without using provisioning features
 Foreman makes one of the most feature-complete web interfaces for Puppet
 rivaling the Puppet Dashboard.
 
-\subsubsection{Chef, Ansible and Salt}
+\subsection{Chef, Ansible and Salt}
 
-Chef is infrastructure automation tool. Chef is written in Ruby and Erlang. Chef uses domain-specific language written in Ruby.
+Chef is infrastructure automation tool. Chef is written in Ruby and Erlang.
+Chef uses domain-specific language written in Ruby.
+Chef server stores your recipes as well as other configuration data.
+The Chef client is installed on each server, virtual machine, container
+or networking device or generally speaking node.
+The client periodically polls Chef server latest policy and
+state of the network. If anything on the node is out of date,
+the client brings it up to date. 
+\footnote{\url{https://www.chef.io/chef/}}.
 
 Ansible remote management software uses SSH to connect to the nodes which
 means there is no agent running on the managed machine, this however makes
@@ -123,7 +223,7 @@ schemes which are not possible with ZeroMQ
 \footnote{\url{http://docs.saltstack.com/en/latest/topics/transports/raet/index.html}}.
 
 
-\subsubsection{Clonezilla, Symantec Ghost, Acronis True Image}
+\subsection{Clonezilla, Symantec Ghost, Acronis True Image}
 
 Clonezilla \footnote{http://clonezilla.org/}
 combines various open-source tools into a single cloning suite.
@@ -150,7 +250,7 @@ and Mac OS X operating systems by Acronis International GmbH.
 The fact that machines need to be taken offline is the main
 drawback of classic disk cloning methods. 
 
-\subsubsection{FSArchiver}
+\subsection{FSArchiver}
 
 FSArchiver
 \footnote{http://www.fsarchiver.org/}
@@ -164,7 +264,7 @@ read-only, with the assistance of LVM read-write mounted
 filesystems can be snapshotted and archived afterwards.
 
 
-\subsubsection{BSD Jails, Solaris Zones, OpenVZ, Linux Containers, systemd-nspawn}
+\subsection{BSD Jails, Solaris Zones, OpenVZ, Linux Containers, systemd-nspawn}
 
 Jails have been available in FreeBSD since version 4.x. Jails use chroot
 syscall to substitute root filesystem of a process making it possible to
@@ -193,14 +293,14 @@ LXC (Linux Containers)
 \footnote{\url{https://linuxcontainers.org/}}
 takes advantage of the \emph{chroot} syscall and
 recently Linux \emph{cgroups} (control groups subsystem) which permit
-more flexible operating system level virtualization.
+more  operating system level virtualization.
 Control groups are used to implement limiting, accounting
 and isolation of CPU, memory, disk I/O, network, etc resource usage.
 LXC allows various backing stores, most notably ZFS, Btrfs and
 OverlayFS which make it very easy to enable container
 snapshotting and streaming backups.
 
-\subsubsection{Docker and Rocket}
+\subsection{Docker and Rocket}
 
 Docker started off as a way to automate container deployment and
 configuration using containers and control groups present in Linux
@@ -208,7 +308,7 @@ kernel. As Docker started to add features that CoreOS developers
 deemed excessive an alternative project Rocket was founded
 \footnote{\url{http://www.theregister.co.uk/2014/12/03/coreos_rocket_deep_dive/}}.
 
-\subsubsection{CoreOS and Ubuntu Core}
+\subsection{CoreOS and Ubuntu Core}
 
 CoreOS \footnote{https://coreos.com/} is a rearchitected Linux
 distribution which provides minimalist foundation to run containers.
@@ -227,7 +327,7 @@ Snappy is also plays important role in Ubuntu Phone ecosystem.
 Snappy uses OverlayFS (?) to implement transactional updates.
 
 
-\subsubsection{OverlayFS}
+\subsection{OverlayFS}
 
 OverlayFS is a feature introduced in Linux 3.18 which makes it
 possible to merge contents of two separate mountpoints on the fly.
@@ -235,7 +335,7 @@ OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of
 read-only SquashFS filesystem
 \footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
 
-\subsubsection{LVM, mdadm and dmraid}
+\subsection{LVM, mdadm and dmraid}
 
 Ext4 has been primary filesystem for Linux based workstations and
 servers for a while. It provides filesystem primitives such as files,
@@ -256,7 +356,7 @@ addresses to corresponding disk's physical address.
 The snapshotting feature of LVM however has been claimed to be buggy
 \footnote{http://lwn.net/Articles/522073/}.
 
-\subsubsection{Btrfs and ZFS}
+\subsection{Btrfs and ZFS}
 
 Btrfs and ZFS both are modern copy on write filesystems
 which also fill in the role of volume manager.
@@ -286,7 +386,7 @@ can easily be snapshotted.
 
 In Btrfs context snapshotting is actually 
 a generalization of subvolume cloning,
-thus "subvolume", "clone" and "snapshot" may be used
+thus \emph{subvolume}, \emph{clone} and \emph{snapshot} may be used
 interchangeably in certain contexts.
 Due to copy-on-write architecture subsequent writes
 to the original subvolume do not affect
@@ -341,7 +441,7 @@ and first partition which is well enough to accommodate
 feature-rich bootloader.
 GRUB2 added support for booting from Btrfs root filesystem
 in various configurations
-\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#Does_grub_support_btrfs.3F}},
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ\#Does_grub_support_btrfs.3F}},
 hence in order to boot from
 Btrfs a GRUB2 installation is required and older versions of
 GRUB are not supported.
@@ -356,7 +456,7 @@ subvolume naming scheme:
 root filesystem is placed in subvolume named \emph{@}
 and home directories in a subvolume called \emph{@home}.
 
-\subsubsection{apt-btrfs-snapshot and yum-fs-snapshot}
+\subsection{apt-btrfs-snapshot and yum-fs-snapshot}
 
 In Ubuntu package repositories there is available
 \emph{apt-btrfs-snapshot}
@@ -373,7 +473,7 @@ Red Hat based distributions.
 These approaches make it possible to boot into previous snapshots
 in case there are issues with the updated packages.
 
-\subsubsection{FreeNAS, Rockstor and OpenMediaVault}
+\subsection{FreeNAS, Rockstor and OpenMediaVault}
 
 FreeNAS is a FreeBSD \footnote{http://www.freenas.org/}
 based distribution which builds a complete NAS solution on top of
@@ -390,7 +490,7 @@ NFS (UNIX file shares) and filesystem aided snapshots.
 
 
 
-\subsubsection{rsync and rsnapshot}
+\subsection{rsync and rsnapshot}
 
 rsync is an open source utility designed for
 fast incremental file transfer.
@@ -406,7 +506,7 @@ extra disk space is consumed. Applying classical rsync on top of
 the clone only increments by the disk usage of changed files.
 
 
-\subsubsection{OpenWrt and DD-WRT}
+\subsection{OpenWrt and DD-WRT}
 
 Most Linux based open-source router firmwares originate from
 Linksys WRT54G wireless router.
@@ -451,8 +551,7 @@ an interrupted firmware upgrade usually renders device unfit for use.
 This is also known as \emph{bricking} in embedded developer jargon.
 
 
-
-\subsubsection{Android}
+\subsection{Android}
 
 Android ROM images are typically distributed as zip files which contain 
 binary blobs for modem and bootloader in addition to snapshots of the
@@ -477,7 +576,7 @@ of the software update process.
 
 
 
-\subsubsection{OpenStack}
+\subsection{OpenStack}
 
 OpenStack is a free and open-source cloud computing software platform
 which is composed of several components of which most noteworthy for current work are:
@@ -492,16 +591,20 @@ Glance BitTorrent delivery enables BitTorrent support for transferring the image
 
 
 
-\section{Background}
+%
+%
+% BACKGROUND
+%
+%
+\chapter{Background}
+\label{chap:bgr}
 
-\subsection{Initial task}
+
+\section{Initial task}
 
 The initial task was to use Ubuntu as operating system basis
 for schools due to rich set of both open-source and
 proprietary software components available in Ubuntu ecosystem.
-
-\subsection{Problems with current approach}
-
 So far the machine deployment was a tedious task involving
 manual labour:
 The Ubuntu 12.04 LTS image had to be downloaded from the Internet
@@ -517,7 +620,11 @@ Once the certificates was signed on the Puppetmaster the
 machine downloaded necessary packages and applied configuration
 changes.
 Usually this would take several Puppet runs and as a result
-setting up a classroom of computers took several days.
+setting up a classroom of computers took several days
+depending on the command-line proficiency of local
+IT-support, which in some cases was close to zero.
+
+\section{Problems with package management}
 
 Ubuntu uses APT (Advanced Packaging Tool) as basis for
 it's package management.
@@ -536,11 +643,11 @@ even more simplified installation of apps for Ubuntu based
 machines, for remotely managed machines the Ubuntu Software Center
 and other graphical package management tools were removed.
 
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\includegraphics[scale=0.6]{img/ubuntu-software-center.png}}
-\caption{Ubuntu Software Center}
-\label{fig:ubuntu-software-center}
+\begin{figure}[tbhp]
+  \centering
+  \includegraphics[width=\textwidth]{images/ubuntu-software-center.png}
+  \caption{Ubuntu software center}
+  \label{fig:ubuntu-software-center}
 \end{figure}
 
 There are however certain corner-cases where APT may render
@@ -553,7 +660,7 @@ involves deleting package lists and running \emph{apt-get update} again.
 Several faulty packaging scripts were stumbled on,
 for example it was not possible to remove certain versions of LibreOffice packages
 and manual intervention was necessary
-\footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367#post5216367}}.
+\footnote{\url{https://www.linuxquestions.org/questions/showthread.php?s=e0e2f7689f847a56e8cee94a0cafd6bd&p=5216367\#post5216367}}.
 
 Debian community has been working hard to provide differential updates for
 the packages, but as of February 2015 the efforts have proven fruitless.
@@ -563,31 +670,33 @@ but binary diffs for packages have not implemented yet.
 Fedora community has however successfully deployed differential packages
 \footnote{http://fedoraproject.org/wiki/Features/Presto},
 thus reducing the amount of data needed to be transferred during an package update. For bigger software (eg LibreOffice) the lack of differential updates poses a serious concern, especially for low-bandwidth links.
-
-Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
-have proven to be especially troublesome due to the fact that system libraries
-and files are updated and interrupted release upgrade may leave system
-in an unusable state.
-
-
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\input{dia/traditional-partitioning.tex}}
-\caption{Partitioning with separate /home}
-\label{fig:traditional-partitioning}
-\end{figure}
-
-Even so separate filesystem for home directories
-as described in Figure~\ref{fig:traditional-partitioning} has
-proven to be effective method against wiping the whole disk
-during reinstall of Ubuntu.
-
 Puppet, SaltStack, Chef, Ansible and other traditional configuration
 management fit best the scenario where each node has slightly different
 configuration and it makes sense to keep them separate. However
 provisioning very similar nodes with for instance Foreman has obvious
 overhead - each node has to fetch updated packages independently from
 the same APT repositories, same has to be done for application software.
+
+Release upgrades for example from Ubuntu 12.04 to Ubuntu 14.04
+have proven to be especially troublesome due to the fact that system libraries
+and files are updated and interrupted release upgrade may leave system
+in an unusable state.
+
+As it has hopefully become clear by now
+installation of software for Ubuntu and Debian
+is most usually performed using APT in one form or another.
+Software that is not available in an APT repository
+is troublesome to install.
+For instance Smarttech distributes software for their smart
+whiteboard products as a .zip of Debian packages.
+Similarily Canon printer drivers are available as a .zip file.
+Last version of Acrobat Reader is also not available
+from any APT repository for Ubuntu 14.04.
+Skype distributes a Debian package for Ubuntu, but again
+not from a APT repository.
+Setting up an APT repository is not a trivial task,
+even for an experienced Linux sysadmin.
+
 
 For classroom deployment cloning has been used in the past:
 Windows, Ubuntu or both are installed on a physical template machine.
@@ -597,13 +706,27 @@ harddisk image to the other machines.
 As the whole procedure is a complex undertaking
 it is usually performed once a year in summer especially for
 educational institutions.
-
 In fact cloning was used by some of the participating
 schools - for example Alan Õis, the IT-support at Mustamäe Gümnaasium
 used Clonezilla to set up his classrooms.
 
 
-\subsection{Specification}
+
+%\begin{figure}[!htb]
+%\centering
+%\scalebox{0.5}{\input{dia/traditional-partitioning.tex}}
+%\caption{Partitioning with separate /home}
+%\label{fig:traditional-partitioning}
+%\end{figure}
+
+%Even so separate filesystem for home directories
+%as described in Figure~\ref{fig:traditional-partitioning} has
+%proven to be effective method against wiping the whole disk
+%during reinstall of Ubuntu.
+
+\clearpage
+
+\section{Specification}
 
 Considering the needs of the commercial customers and
 experience gained in the first iteration of the migration project
@@ -638,26 +761,56 @@ following list of requirements were specified for next iteration.
 \item As initial provisioning can be assumed to be done on premises,
 man-in-the-middle attacks can be ruled out in that
 provisioning stage.
-\item Subsequent incremental snapshots have to be verified
-by means of asymmetric keys.
+\item It has to be possible to verify subsequent incremental snapshots by means of asymmetric keys.
 \item Consistent methods for root filesystem template fingerprinting have to be provided
 \end{enumerate}
 
-\section{Butterknife Design and Architecture}
+
+%
+%
+% DESIGN
+%
+%
+\chapter{Butterknife Design and Architecture}
+\label{chap:design}
+We have outlined a number of existing methods and tools 
+which address various aspect of Linux deployment on workstations
+in chapter \ref{chap:intro}, and it has hopefully become clear
+the functionality and guarantees provided by the presented systems.
+However, it is clear that there will never be a single tool
+that is optimal for every application. 
+
+Yet, many problems are a shared concern between all of these systems.
+Foremost among these are \emph{bootstrapping}, i.e. getting
+the initial software setup on the machine,
+\emph{upgrading}, that is updating the software components on the machine and
+\emph{configuring} the software components.
+
+To address this issue, we present \emph{Butterknife},
+a provisioning suite that provides solutions for bootstrapping and
+upgrading Linux-based workstations, while remaining flexible enough
+to be used to deploy any Linux-based operating system
+and to be used in conjunction with already existing
+configuration management tools such as Puppet and Salt.
+
+\clearpage
+
+\section{Concepts}
+\label{sec:concepts}
 
 The prototype draws inspiration from embedded computers
 where certain guarantees have to be provided.
 The workflow for the prototype is described in
-Figure~\ref{fig:butterknife-workflow}.
+Figure~\ref{fig:butterknife-workflow}.\\
 
 \begin{figure}[!htb]
 \centering
-\scalebox{0.5}{\input{dia/workflow.tex}}
+\scalebox{0.6}{\input{dia/workflow.tex}}
 \caption{Workflow for Btrfs snapshot based software deployment}
 \label{fig:butterknife-workflow}
 \end{figure}
 
-\noindent The prototype consists of three major components:
+\noindent The prototype consists of four major components:
 
 \begin{enumerate}
 \item Helpers to build a template.
@@ -666,12 +819,9 @@ Figure~\ref{fig:butterknife-workflow}.
 \item DBus services for applying incremental snapshots online.
 \end{enumerate}
 
+\clearpage
 
-
-
-
-
-\subsection{Template helpers}
+\section{Template helpers}
 
 LXC containers are used to bootstrap the template for provisioning.
 Creating container with Btrfs backing store (lxc-create -B btrfs)
@@ -687,8 +837,9 @@ Then a read-only Btrfs snapshot is generated from the container root filesystem.
 At this point new snapshot becomes available via HTTP API.
 
 
+\clearpage
 
-\subsection{HTTP API}
+\section{HTTP API}
 
 Falcon HTTP API from Rackspace was used to build the
 API for Butterknife server
@@ -710,18 +861,18 @@ The \emph{version} refers to the snapshot of the template.
 The \emph{arch} refers to target architecture which is normalized
 to \emph{x86} for 32-bit and \emph{x86\_64} for 64-bit Intel x86 machines.
 For example the Btrfs subvolume stream URL for
-snap42 of the 32-bit EduWorkstation would be
+snap42 of the 32-bit EduWorkstation that originates from butterknife.koodur.com would be
 
 \emph{/api/template/com.koodur.butterknife.EduWorkstation/arch/x86/version/snap42/stream}.
 
 Note that the stream URL also accepts parent argument,
 so incremental snapshot can be received simply by appending
 \emph{?parent=snap41}.
-The unicast snapshot transfer topology
-shown in Figure~\ref{fig:butterknife-usecase-http}
-suffers obvious scalability issue, the uplink of the server
-is eventually congested and throughput per node
-decreases with every additional node.
+The unicast snapshot transfer topology is
+shown in Figure~\ref{fig:butterknife-usecase-http}.
+Note that unicast suffers obvious scalability issue,
+the uplink of the server is eventually congested and
+throughput per node decreases with every additional node.
 
 \begin{figure}[!htb]
 \centering
@@ -747,7 +898,9 @@ All the other nodes are receiving over multicast
 \end{figure}
 
 
-\subsection{Provisioning image}
+\clearpage
+
+\section{Provisioning image}
 
 Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
 operating system. With Debian and Ubuntu the resulting PXE bootable image
@@ -765,19 +918,19 @@ mainly targeted for power users.
 Using Python to build pseudo-graphic menu-driven user interface was
 evaluated and deemed not necessary for the goal as Python runtime and
 dependant libraries add about 10MB to the resulting image.
-In addition to that \emph{parted} Python bindings were unavailable
+In addition to that \texttt{parted} Python bindings were unavailable
 in Buildroot package selection.
 
 Buildroot was eventually used to generate an compact 10MB all-in-one
-PXE-bootable image. Utilities \emph{dialog} in conjunction with
-\emph{curl}, \emph{jq} and others were used to build the user-interface
+PXE-bootable image. Utilities \texttt{dialog} in conjunction with
+\texttt{curl}, \texttt{jq} and others were used to build the user-interface
 and Bash was used to program the user-interface logic.
-Resizing of NTFS filesystems is provided by \emph{ntrfsresize} utility
-which is part of \emph{ntfs-3g} package, this eases deployment of
+Resizing of NTFS filesystems is provided by \texttt{ntrfsresize} utility
+which is part of \texttt{ntfs-3g} package, this eases deployment of
 dual-boot machines.
 Complete multicast is supported via consistent snapshot naming scheme
-and \emph{udpcast-receive} and \emph{udpcast-sender} utilities which
-are part of \emph{udpcast} package.
+and \texttt{udpcast-receive} and \texttt{udpcast-sender} utilities which
+are part of \texttt{udpcast} package.
 
 The security model for the initial deployment phase could be improved
 as only method of verification of the source is the certificate
@@ -787,9 +940,40 @@ retrieval.
 The used partitioning scheme is described in Figure~\ref{fig:pooled-partitioning}
 is inspired by Ubuntu and Lennart Poettering's article.
 The whole block device is allocated to single Btrfs filesystem
-which is always mounted at \emph{/var/butterknife/pool} making
+which is mounted at \texttt{/var/butterknife/pool} making
 it possible to easily iterate over templates and root filesystem instances
 present in the machine.
+Whenever a Btrfs (differential) snapshot stream is received
+the incoming subvolume is placed under \texttt{/var/butterknife/pool}.
+Before transfer remnants of previously interrupted transfers are cleaned
+up by simply iterating over directories beginning with \texttt{@template:}
+and attempting to create a file inside the directory.
+If the file creation succeeds, the subvolume is deleted.
+Note that prior successful exit \texttt{btrfs receive} sets the
+subvolume read-only, thus file creation should fail.
+
+Once the template subvolume is successfully received
+a read-write clone is made with \texttt{@root:} prefix,
+this signifies an \emph{instance} of a root filesystem.
+The instance subvolume is mounted at \texttt{/mnt/target}
+and several mountpoints such as \texttt{/dev/},
+\texttt{/proc/}, \texttt{/sys/} are bound to \texttt{/mnt/target}.
+
+Finally \texttt{chroot} is issued to enter the instance to
+run \texttt{butterknife-postdeploy} which executes
+post-deploy scripts which are part of the template.
+Most usually the Btrfs pool is mounted at \texttt{/var/butterknife/pool}
+of the instance and \texttt{@persistent} subvolume is created
+in the pool.
+The persistent subvolume is then mounted at \texttt{/var/butterknife/persistent}.
+The persistent subvolume is used to retain hostname,
+domain join information (Kerberos keytab, Samba secrets),
+Puppet keys and certificates etc.
+Final aspect of the postdeploy scripts is the 
+bootloader installation.
+As the root filesystem is esentially swapped out,
+\texttt{grub-install} is required to update references
+to the newly created OS instance.
 
 \begin{figure}[!htb]
 \centering
@@ -799,7 +983,7 @@ present in the machine.
 \end{figure}
 
 
-\subsection{DBus services}
+\section{DBus services}
 
 For running nodes a DBus service was written to poll the snapshot server
 for updates and another DBus service was written in Python to notify user
@@ -807,47 +991,181 @@ about available updates.
 
 
 
+%
+%
+% EVALUATION
+%
+%
+\chapter{Experimental Evaluation}
+\label{chap:eval}
+In order to show that our basic approach in Butterknife is practical and
+and extendible for large-scale applications such as unrolling
+updates for smartphones or other embedded devices.
+
+TODO
+
+Using Butterknife it is easy to bundle proprietary components
+into the template, thus setting up APT repository to distribute
+packages for the workstation is not necessary.
+
+\clearpage
+
+\section{Benchmarks}
+
+The resulting full snapshot for schools was based on 32-bit Ubuntu 14.04 and
+it included MATE 1.8.2 desktop environment, Mozilla Firefox 37 web browser,
+LibreOffice 4.4.2 office suite,
+VLC 2.1.6 multimedia player,
+Skype 4.3.0 voice over IP solution,
+Inkscape 0.48.4 scalable vector graphics editor,
+Gimp 2.8.10 photo editor and many tweaks
+to make the system usable in Estonian schools.
+
+The throughput of the server-client channel depends on
+several factors: 
+raw snapshot bitstream size,
+network bandwidth;
+compression algorithm;
+parallelization of compression;
+encryption;
+storage medium.
+
+The disk usage of resulting
+\texttt{@template:com.koodur.butterknife.EduWorkstation:x86:snap83}
+subvolume was approximately 6.20GiB
+due to fragmentation and holes in sparse files.
+Issuing \texttt{btrfs send} on the subvolume
+results in approximately 5.75GiB bitstream.
+Compressing the bitstream yields different
+results depending on the compression algorithm:\\
+
+\begin{tikzpicture}
+    \begin{axis}[xbar,width=12cm, height=8cm,
+        xmin=0,xlabel={Resulting file size (GiB)},
+        symbolic y coords={xz, bzip2, gzip, lz4 -9, lz4 -1, raw},
+        nodes near coords, nodes near coords align={horizontal},
+        ytick=data]
+        \addplot coordinates {
+            (5.75,raw)
+            (3.21,lz4 -1)
+            (2.77,lz4 -9)
+            (2.51,gzip)
+            (2.32,bzip2)
+            (1.87,xz)
+        };
+    \end{axis}
+\end{tikzpicture}
+
+Note that streaming compression is necessary for scenarios
+where differential snapshots are not stored as static files
+or where the full snapshots are directly served from
+\texttt{btrfs send} which is also the default case for Butterknife.
+
+Compression time was measured on Intel(R) Core(TM) i7-4770R CPU 
+clocked at 3.20GHz with 2x 8GB DDR3 memory modules running
+Ubuntu 14.04 LTS and 3.16.0 kernel.
+The source and destination directories were
+mounted as \texttt{tmpfs} to exclude the
+HDD/SDD effects on the test.
+The parallel version of \texttt{gzip} algorithm,
+\texttt{pigz} is included in the results as well as \texttt{pxz}
+the parallel version of \texttt{xz}.
+\\
+
+\begin{tikzpicture}
+    \begin{axis}[xbar,width=12cm, height=8cm,
+        xmin=0,xlabel={Real time (sec)},
+        symbolic y coords={xz, raw over 100MBps, bzip2, pxz, gzip, raw over 300MBps, raw over 1GBps, pigz},
+        nodes near coords, nodes near coords align={horizontal},
+        ytick=data]
+        \addplot coordinates {
+            (46,pigz)
+            (57.5,raw over 1GBps)
+            (192,raw over 300MBps)
+            (206,gzip)
+            (494,pxz)
+            (555,bzip2)
+            (575,raw over 100MBps)
+            (2150,xz)
+        };
+    \end{axis}
+\end{tikzpicture}
+
+Note that \texttt{pxz} actually used 53m41.214s of CPU time
+and \texttt{pigz} used 5m31.287s of CPU time.
+The most important conclusion that can be drawn from the 
+results is that enabling compression may actually cap the
+deployment speed.
+If single-threaded \texttt{gzip}, \texttt{pxz} or
+\texttt{bzip2} might make sense for 100MBps infrastructure,
+then going beyond gigabit threshold the
+law of diminishing returns can be observed.
+
+The compression aspect is notable because
+Estonian Educational Network has planned infrastructure
+upgrades for 2016 and their plan is to supply
+gigabit link to every educational institution of Estonia.
 
 
-
-\subsection{Benchmarks}
 
 As root filesystem contains numerous small files significant
-slowdown was observed is spinning disk was used on the either side.
-The throughput averaged ~37MB/s while
-streaming Ubuntu root filesystem to/from
-Western Digital WD40EFRX without using encryption or compression.
-Using SSD-s on both ends averaged around 100MB/s
+slowdown was imminent if spinning disk was used on the either side.
+An average throughput of ~37MB/s was observed while
+running \texttt{btrfs send} from or \texttt{btrfs receive} to
+Western Digital WD40EFRX without using encryption or compression
+over plain HTTP.
+Using arbitrary SSD-s on both ends averaged around 100MB/s
 due to gigabit ethernet used for benchmarking.
 
 
-\section{Conclusions and Future work}
 
-\subsection{Conclusions}
+%
+%
+% CONCLUSIONS
+%
+%
+\chapter{Conclusions and Future Work}
+\label{chap:conc}
+
+TODO
+
+
+
+\section{Conclusions}
 
 The implementation satisfies, exceeds to be precise,
 the requirements of educational institutions.
+It significantly decreases local IT-support work,
+by reducing workstation bootstrap down to 15 minutes even for
+a regular sized classroom.
 
 Source code of the solution was published at GitHub
 \footnote{https://github.com/v6sa/butterknife}.
 The instructions for setting up similar infrastructure
-are provided at GitHub and are constantly being improved.
-Small testing community is already emerging.
+are provided at GitHub and are constantly being improved,
+making it possible for virtually anyone
+to roll a customized distribution
+for particular purpose.
+
+Butterknife also omits the overhead
+and complexity associated with traditional
+ISO remastering systems such as \emph{remastersys}
+\footnote{\url{https://help.ubuntu.com/community/LiveCDCustomization}}.
 
 
-\subsection{Push and pull capabilities}
+\section{Push and pull capabilities}
 
 As of kernel 3.17 there is no consistent way of transferring
 differential snapshots in a distributed Git-like fashion due to way
-\emph{btrfs receive} locates the parent subvolume.
-Whenever \emph{btrfs send} is issued, the \emph{uuid} of origin
+\texttt{btrfs receive} locates the parent subvolume.
+Whenever \texttt{btrfs send} is issued, the \texttt{uuid} of origin
 subvolume is bundled with the bitstream, that becomes
-the \emph{received\_uuid} on the receiving endpoint and
-new \emph{uuid} is assigned for the created subvolume.
-For incremental snapshots \emph{btrfs send} also bundles
-the \emph{uuid} of the parent subvolume,
-now \emph{btrfs receive} attempts to locate the parent
-subvolume by \emph{received\_uuid} of local subvolumes.
+the \texttt{received\_uuid} on the receiving endpoint and
+new \texttt{uuid} is assigned for the created subvolume.
+For incremental snapshots \texttt{btrfs send} also bundles
+the \texttt{uuid} of the parent subvolume,
+now \texttt{btrfs receive} attempts to locate the parent
+subvolume by \texttt{received\_uuid} of local subvolumes.
 
 This effectively restricts the workflow to one direction
 as shown in Figure~\ref{fig:btrfs-received-uuid-issue}.
@@ -868,17 +1186,17 @@ Arne Jansen, previously a Btrfs developer maintains far-progs repository
 which contains tools for manipulating Btrfs snapshot streams,
 this format is also known as FAR (Filesystem ARchive).
 The repository contains most notably three utilities
-\emph{fssum}, \emph{fardump} and modified version of \emph{btrfs-receive}.
-The first one, \emph{fssum} can be used to calculate checksum of a
+\texttt{fssum}, \texttt{fardump} and modified version of \texttt{btrfs-receive}.
+The first one, \texttt{fssum} can be used to calculate checksum of a
 directory tree, making it possible to verify received snapshot,
-\emph{fssum} also has flags to omit modification times and other information that 
+\texttt{fssum} also has flags to omit modification times and other information that 
 in certain context may be interpreted as noise.
-The second one \emph{fardump} can be used to examine FAR stream contents
+The second one \texttt{fardump} can be used to examine FAR stream contents
 in a human readable format.
-Finally the \emph{btrfs-receive} from \emph{far-progs} features
-two extra flags: \emph{-p} which disables
+Finally the \texttt{btrfs-receive} from \texttt{far-progs} features
+two extra flags: \texttt{-p} which disables
 automatic parent searching and allows user to specify which 
-subvolume to use as a parent and \emph{-d} which 
+subvolume to use as a parent and \texttt{-d} which 
 allows specifying a custom subvolume name.
 
 Disabling parent search makes it possible to detach
@@ -887,7 +1205,7 @@ In this case care must be taken of snapshot consistency,
 applying differential snapshot on incorrect parent subvolume
 may cause data corruption or end up with a crash.
 
-\subsection{Adding BitTorrent transport}
+\section{Adding BitTorrent transport}
 
 Currently only HTTP(S), multicast and their combinations are supported
 for initial provisioning stage.
@@ -898,10 +1216,10 @@ The differential snapshots are primarily downloaded
 via HTTP(S) because coordinating multicast
 transfers with roaming laptops is a complex scenario.
 
-As getting consistent output from \emph{btrfs send}
+As getting consistent output from \texttt{btrfs send}
 is tricky it makes sense to store the incremental snapshot
 bitstreams as files and use BitTorrent to redistribute them.
-This way \emph{received\_uuid} can be kept in sync with the origin
+This way \texttt{received\_uuid} can be kept in sync with the origin
 
 
 BitTorrent is a protocol designed for peer-to-peer file transfer.
@@ -920,17 +1238,17 @@ nodes.
 
 
 
-\subsection{Deep BitTorrent integration}
+\section{Deep BitTorrent integration}
 
 A .torrent file contains metadata about the content in question and a
 tracker URL - that is the service which is used to discover other peers in the
 pool of participating nodes also known as swarm.
 BitTorrent splits files into pieces and SHA-1 hash is calculated per piece.
 BitTorrent protocol does not specify minimal piece length
-\footnote{\url{http://www.bittorrent.org/beps/bep_0003.html#info-dictionary}},
+\footnote{\url{http://www.bittorrent.org/beps/bep_0003.html\#info-dictionary}},
 but for example libtorrent imposes restriction of having piece length
 a multiple of 16KB
-\footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html#id5}}.
+\footnote{\url{http://www.libtorrent.org/reference-Create_Torrents.html\#id5}}.
 It is reccommended to keep BitTorrent file size below 100kB,
 which means the piece size is correlated to content size
 \footnote{\url{https://wiki.vuze.com/w/Torrent_Piece_Size}}.
@@ -969,12 +1287,13 @@ simply by introducing new file mode.
 \label{fig:torrent-multifile-aligned}
 \end{figure}
 
+
 Btrfs uses crc32c for checksumming and support for additional
 checksum algorithms, namely SHA1 is planned
-\footnote{\url{https://btrfs.wiki.kernel.org/index.php/Project_ideas#More_checksumming_algorithms}}.
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/Project_ideas\#More_checksumming_algorithms}}.
 Current on-disk format supports up to 256-bit hash checksum per
 metadata block and arbitrary count of hashes for per-block checksums.
-\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ#What_checksum_function_does_Btrfs_use.3F}}
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/FAQ\#What_checksum_function_does_Btrfs_use.3F}}
 As of November 2013 Btrfs defaults to 16kB or page size
 whichever is larger.
 On most Linux workstation page size is set to 4kB, thus 16kB block
@@ -982,7 +1301,7 @@ size takes precedence.
 \footnote{\url{https://git.kernel.org/cgit/linux/kernel/git/mason/btrfs-progs.git/commit/?id=c652e4efb8e2dd76ef1627d8cd649c6af5905902}}.
 
 As online deduplication is in works for Btrfs it makes sense to
-combine the two, implementing additional \emph{ioctl} for Btrfs in
+combine the two, implementing additional \texttt{ioctl} for Btrfs in
 order to perform block lookup by checksum is trivial task.
 This could make it possible to implement high-performance
 BitTorrent implementation which takes advantage of Btrfs metadata.
@@ -1007,8 +1326,7 @@ POSIX filesystem permissions and access control lists
 This leads us to believe that these properties be transferred
 using additional manifest file, making use of .torrent file redundant.
 
-
-\subsubsection{Alternative filesystem layouts}
+\section{Alternative filesystem layouts}
 
 Lennart Poettering, an controversial Free Software developer has outlined a method
 \footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}
@@ -1021,14 +1339,19 @@ which would permit mixing operating system files with different
 sets of libraries, frameworks and applications.
 
 
+%
+%
+% APPENDIX
+%
+%
+
+\appendix
 
 
-Debian has put significant effort into making Debian package builds reproducible
-\footnote{https://wiki.debian.org/ReproducibleBuilds}.
-
-
-
-\bibliographystyle{plain}
-\bibliography{references}
+\clearpage
+\twocolumn
+\printglossaries
+\clearpage
+\onecolumn
 
 \end{document}

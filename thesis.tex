@@ -1033,7 +1033,36 @@ packages for the workstation is not necessary.
 
 \clearpage
 
-\section{Benchmarks}
+\section{Feedback from users}
+
+\section{Integrity}
+
+It must not be forgotten that Btrfs is relatively 
+new filesystem and even though on-disk format of
+Btrfs is not excpected to change anymore
+the kernel drivers and userspace utilities are
+still being actively developed.
+Due to this there are certain corner-cases where
+Btrfs may fail horribly,
+for example 3.14 and earlier kernel had often issues
+with filesystem corruption and data loss
+\footnote{\url{http://www.spinics.net/lists/linux-btrfs/msg34221.html}},
+especially when filesystem was running out of free space.
+
+The author hasn't faced any serious issues with
+3.16 kernel, but for example btrfs-progs 3.16 have
+bugs which prevent it's use in case of nested subvolumes.
+Ubuntu also has upgraded from 3.14 to 3.16 in Ubuntu 14.04,
+their last Long Term Support release.
+
+Linux 3.18 has also proven to be reliable when in comes
+to Btrfs, but for example Linux 3.19 faces
+a deadlock during an attempt to mount
+dirty Btrfs filesystem
+\footnote{\url{http://www.reddit.com/r/linux/comments/31s042/current_stable_kernels_3194_may_fail_to_mount/}}.
+
+
+\section{Performance}
 
 The resulting full snapshot for schools was based on 32-bit Ubuntu 14.04 and
 it included MATE 1.8.2 desktop environment, Mozilla Firefox 37 web browser,
@@ -1087,13 +1116,16 @@ Direct streaming with \texttt{btrfs send} makes it possible
 to take full advantage of the copy-on-write filesystem
 and snapshots while keeping disk usage on the server side minimal.
 
-Compression time was measured on Intel(R) Core(TM) i7-4770R CPU 
+Compression time was measured on Intel(R) Core(TM) i7-4770R quad-core CPU 
 clocked at 3.20GHz with 2x 8GB DDR3 memory modules running
 Ubuntu 14.04 LTS and 3.16.0 kernel.
+Similar tests were performed on QNAP TS-451 NAS-box equipped with
+Intel Celeron J1800 dual-core CPU and 2x 4GB DDR3 memory modules.
 The source and destination directories were
 mounted as \texttt{tmpfs} on the same 
 machine to exclude the
 HDD/SDD and network effects on the test.
+In addition to single-threaded \texttt{gzip} and 
 The parallel version of \texttt{gzip} algorithm,
 \texttt{pigz} is included in the results as well as \texttt{pxz}
 the parallel version of \texttt{xz}.
@@ -1118,8 +1150,6 @@ the parallel version of \texttt{xz}.
 Note that \texttt{pxz} actually used 53m41.214s of CPU time
 and \texttt{pigz} used 5m31.287s of CPU time.
 
-
-
 As root filesystem contains numerous small files significant
 slowdown was imminent if spinning disk was used on the either side.
 An average throughput of ~37MB/s was observed while
@@ -1129,26 +1159,33 @@ over plain HTTP.
 Using arbitrary SSD-s on both ends averaged around 100MB/s
 due to gigabit ethernet used for benchmarking.
 
+SSD-s however face other issues
+
 
 \begin{tikzpicture}
-    \begin{axis}[xbar,width=8cm, height=12cm,
+    \begin{axis}[xbar,width=8cm, height=14cm,
         xmin=0,xlabel={Average throughput (MB/s)},
-        symbolic y coords={xz on i7-4770R, Fast Ethernet, bzip2 on i7-4770R, pxz on i7-4770R, gzip on i7-4770R, btrfs receive on Samsung M9T, btrfs send on WD40EFRX, btrfs send on SDSSDHP256G, Gigabit Ethernet, btrfs send on SSDMCEAW240A4, pigz on i7-4770R},
+        symbolic y coords={xz on Celeron-J1800,pxz on Celeron-J1800,xz on i7-4770R, Fast Ethernet, bzip2 on i7-4770R, pxz on i7-4770R, gzip on Celeron-J1800, gzip on i7-4770R, btrfs receive on Samsung M9T, pigz on Celeron-J1800, btrfs send on WD10JFCX, btrfs receive on WD10JFCX, btrfs send on WD40EFRX, btrfs send on SDSSDHP256G, Gigabit Ethernet, btrfs send on SSDMCEAW240A4, pigz on i7-4770R},
         nodes near coords, nodes near coords align={horizontal},
-        ytick=data]
+        ytick=data] 
         \addplot coordinates {
             (125,pigz on i7-4770R)
             (112,btrfs send on SSDMCEAW240A4)
             (100,Gigabit Ethernet)
             (86.2,btrfs send on SDSSDHP256G)
             (58,btrfs send on WD40EFRX)
+            (47,btrfs receive on WD10JFCX)
+            (41,btrfs send on WD10JFCX)
+            (29.9,pigz on Celeron-J1800)
             (27,btrfs receive on Samsung M9T)
             (27,gzip on i7-4770R)
+            (16.8,gzip on Celeron-J1800)
             (11.6,pxz on i7-4770R)
             (10.3,bzip2 on i7-4770R)
             (10,Fast Ethernet)
-            
-            (2.6,xz on i7-4770R)
+            (2.6,xz on i7-4770R)           
+            (2.6,pxz on Celeron-J1800)
+            (1.3,xz on Celeron-J1800)
         };
         
     \end{axis}
@@ -1156,19 +1193,16 @@ due to gigabit ethernet used for benchmarking.
 
 The empiric observations carried out with
 the snap83 of the root filesystem  pointed out
-several aspects which went previously unnoticed.
+the bottlenecks that previously went unnoticed.
 The most important conclusion that can be drawn from the 
-results is that enabling compression may actually cap the
+results is that enabling compression may actually hamper the
 deployment speed.
-If single-threaded \texttt{gzip}, \texttt{pxz} or
-\texttt{bzip2} might make sense for 100MBps infrastructure,
-then going beyond gigabit threshold the
-law of diminishing returns can be observed.
+Single-threaded \texttt{gzip} might make sense for 100MBps infrastructure,
+but going beyond gigabit threshold the law of diminishing returns can be observed.
 Additionally the harddisks with spinning platters
 as well as solid-state disks impose throughput
 limitations due to prolonged seek times
 caused by normal filesystem fragmentation. 
-
 The compression aspect is notable because
 Estonian Educational Network has scheduled infrastructure
 upgrades for 2016 and their plan is to supply

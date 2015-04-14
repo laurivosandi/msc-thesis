@@ -10,8 +10,6 @@
 \usepackage{graphicx}
 \usepackage{tikz}
 \usepackage{pgfplots}
-
-\usepackage{listings}
 \usepackage[numbers, square]{natbib}
 \bibliographystyle{IEEEtranN}
 \usepackage{color}
@@ -27,11 +25,10 @@
 
 %% Listings
 \usepackage{listings}
-\lstset{escapechar=\%, frame=tb, basicstyle=\ttfamily, language=Java}
-\lstset{prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\rhookswarrow}}}
-\lstset{postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\rcurvearrowse\space}}}
-\lstset{breaklines=true, breakatwhitespace=false}
 \lstset{numbers=left, numberstyle=\scriptsize, firstnumber=1}
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstset{keywordstyle=\color{teal}\bfseries}
+
 
 %% Other
 \usepackage{enumerate}
@@ -421,14 +418,7 @@ by a concept of \emph{btrfs send} and \emph{btrfs receive}.
 Btrfs send mandates the subvolume to be in a read-only mode,
 which means that \emph{btrfs subvol snapshot} has to be issued
 with extra \emph{-r} flag.
-The Btrfs send bitstream contains filesystem operations that are
-indended to be replayed on a clone of the parent subvolume:
-create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
-\emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
-close file, write to file, set/remove extended attributes,
-truncate file, \emph{chmod}, \emph{chown}
-\footnote{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c}.
-During receive a subvolume is created 
+
 
 Btrfs uses \emph{received\_uuid} and \emph{uuid} to
 identify snapshots for transfer.
@@ -1060,6 +1050,58 @@ to Btrfs, but for example Linux 3.19 faces
 a deadlock during an attempt to mount
 dirty Btrfs filesystem
 \footnote{\url{http://www.reddit.com/r/linux/comments/31s042/current_stable_kernels_3194_may_fail_to_mount/}}.
+
+
+\section{Security}
+As said, Btrfs is an evolving filesystem and there
+are corner-cases where Btrfs fails security-wise.
+For example issuing \texttt{btrfs subvol list} within
+a \texttt{chroot} exposes subvolumes outside the new root filesystem.
+
+
+For Butterknife usecase other security aspects have to be considered.
+As of \texttt{btrfs-progs} version 3.19 the \texttt{btrfs receive}
+simply replays set of opcodes
+\footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c?h=v3.19.x\#n792}}:
+create subvolume, snapshot parent subvolume,
+create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
+\emph{link}, \emph{unlink}, \emph{rename}, \emph{rmdir}, open file,
+close file, write to file, set/remove extended attributes,
+truncate file, \emph{chmod}, \emph{chown}.
+
+In case of full snapshot \texttt{ioctl} is issued to
+create empty subvolume with specified name and
+in case of differential snapshot an \texttt{ioctl} is issued
+to locate parent subvolume by UUID and clone it.
+After the initial opcode traditional filesystem
+operations are carried out on the newly
+created/cloned subvolume.
+
+As can be seen in the \texttt{unlink} opcode
+implementation on line 456 of cmds-receive.c
+\footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c?h=v3.19.x\#n456}},
+the \texttt{path\_cat} function is used to concatenate
+path of the subvolume and target filename.
+Investigating further reveals that no sanitization is performed on the path
+\footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/send-utils.c?h=v3.19.x\#n711}}, leaving receiving end vulnerable to path traversal attacks.
+Carefully crafted Btrfs stream for example could delete files
+of the running operating system rendering the whole system
+in unusable state.
+
+Several \texttt{btrfs-progs} patches were submitted to improve
+the security of \texttt{btrfs receive}.
+The preliminary patch to enforce \texttt{chroot}
+before parsing the Btrfs stream was submitted to Btrfs mailinglist
+\footnote{\url{http://www.mail-archive.com/linux-btrfs@vger.kernel.org/msg43019.html}}
+by the author.
+This patch however confines the \texttt{btrfs receive}
+process only to the parent directory of the newly created subvolume,
+making it possible to attack other subvolumes contained in the same directory.
+The confinement could be improved even more, for example
+by parsing the opcode, performing either
+subvolume creation or parent subvolume cloning,
+then issuing \texttt{chroot} to the subvolume directory
+and finally replaying the remaining opcodes.
 
 
 \section{Performance}

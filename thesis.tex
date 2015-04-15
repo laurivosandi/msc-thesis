@@ -618,9 +618,10 @@ Glance BitTorrent delivery enables BitTorrent support for transferring the image
 The initial task was to use Ubuntu as operating system basis
 for schools due to rich set of both open-source and
 proprietary software components available in Ubuntu ecosystem.
-So far the machine deployment was a tedious task involving
+
+So far the machine deployment has been a tedious task involving
 manual labour:
-The Ubuntu 12.04 LTS image had to be downloaded from the Internet
+The Ubuntu 14.04 LTS image had to be downloaded from the Internet
 and transferred to a memory stick.
 The Ubuntu installer was booted from the memory stick
 and usual installation was performed which took roughly 20 minutes.
@@ -636,6 +637,13 @@ Usually this would take several Puppet runs and as a result
 setting up a classroom of computers took several days
 depending on the command-line proficiency of local
 IT-support, which in some cases was close to zero.
+
+In earlier phases of the project remastered Ubuntu 12.04
+was used to bootstrap the machines, but as the
+CD generation process was complex, time-consuming and
+error-prone.
+As the packages were updated in the Ubuntu repositories
+
 
 \section{Problems with package management}
 
@@ -813,8 +821,14 @@ configuration management tools such as Puppet and Salt.
 
 The prototype draws inspiration from embedded computers
 where certain guarantees have to be provided.
-The workflow for the prototype is described in
-Figure~\ref{fig:butterknife-workflow}.\\
+Butterknife makes use of Btrfs filesystem and Linux Containers.
+The workflow of the prototype is split into
+bootstrap and live stages as shown in
+Figure~\ref{fig:butterknife-workflow}.
+
+A template of computer's
+is prepared in a Linux Container
+
 
 \begin{figure}[!htb]
 \centering
@@ -842,7 +856,8 @@ on top of a Btrfs filesystem places the container in an
 isolated subvolume which makes it easy to snapshot the container.
 Within the container \emph{puppet apply} and similar methods can be used
 to take advantage of already existing configuration management know-how.
-Otherwise traditional manual labour can be employed to set up the template: installing packages, tweaking configuration files etc.
+Otherwise traditional manual labour can be employed
+to set up the template: installing packages, tweaking configuration files etc.
 
 During the release phase the LXC container is stopped, pre-release
 scripts are executed to clean up package cache and temporary files.
@@ -852,7 +867,10 @@ At this point new snapshot becomes available via HTTP \gls{api}.
 
 \clearpage
 
-\section{HTTP API}
+\section{Command-line utility}
+
+The command-line utility is mainly targeted for
+advanced use-cases 
 
 Falcon HTTP API from Rackspace was used to build the
 API for Butterknife server
@@ -915,9 +933,13 @@ All the other nodes are receiving over multicast
 
 \section{Provisioning image}
 
-Using Debian, Ubuntu and Gentoo were evaluated as provisioning utility
-operating system. With Debian and Ubuntu the resulting PXE bootable image
-would have exceeded 100MB.
+The provisioning image was designed to bootstrap a machine.
+Using Debian, Ubuntu, Gentoo and Buildroot were evaluated as
+provisioning utility operating system.
+With Debian and Ubuntu the resulting PXE bootable
+image would have exceeded 100MB, as the image
+is uncompressed to RAM, booting on machines with
+less than 1GB of RAM is troublesome.
 As of February of 2015 the CoreOS image suffers similar issue -
 \emph{vmlinuz}
 \footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe.vmlinuz}}
@@ -925,19 +947,20 @@ and
 \emph{initrd}
 \footnote{\url{http://stable.release.core-os.net/amd64-usr/current/coreos_production_pxe_image.cpio.gz}}
 files required to boot over PXE are correspondingly 24MB and 117MB.
-With Gentoo significant tweaking is required, because Gentoo is
+With Gentoo significant tweaking was required, because Gentoo is
 mainly targeted for power users.
+Buildroot was eventually used to generate an (<15MB)
+all-in-one PXE-bootable image as well as ISO image
+which can be dumped on a USB memory stick.
 
 Using Python to build pseudo-graphic menu-driven user interface was
 evaluated and deemed not necessary for the goal as Python runtime and
 dependant libraries add about 10MB to the resulting image.
 In addition to that \texttt{parted} Python bindings were unavailable
 in Buildroot package selection.
-
-Buildroot was eventually used to generate an compact 10MB all-in-one
-PXE-bootable image. Utilities \texttt{dialog} in conjunction with
+Instead \texttt{dialog} in conjunction with
 \texttt{curl}, \texttt{jq} and others were used to build the user-interface
-and Bash was used to program the user-interface logic.
+and shell was used to program the user-interface logic.
 Resizing of NTFS filesystems is provided by \texttt{ntrfsresize} utility
 which is part of \texttt{ntfs-3g} package, this eases deployment of
 dual-boot machines.
@@ -948,7 +971,8 @@ are part of \texttt{udpcast} package.
 The security model for the initial deployment phase could be improved
 as only method of verification of the source is the certificate
 authority chain verified by \emph{curl} during the Btrfs snapshot
-retrieval.
+retrieval. For multicast transfers there is no security
+enforced by software.
 
 The used partitioning scheme is described in Figure~\ref{fig:pooled-partitioning}
 is inspired by Ubuntu and Lennart Poettering's article.
@@ -1023,7 +1047,21 @@ packages for the workstation is not necessary.
 
 \clearpage
 
-\section{Feedback from users}
+\section{Feedback}
+
+Butterknife service users, local IT-support in this case
+was generally satisfied with the delivery.
+Reinstallation of classroom or conversion to dual-boot,
+wasn't anymore necessarily a task that had to
+be strictly scheduled for school holidays.
+Butterknife-based upgrade from Ubuntu 12.04 to
+Ubuntu 14.04 was performed within first
+half of a day at Mahtra.
+
+
+Butterknife project users, fellow devops in this case
+were also positively surprised by the
+streamlined deployment process of Butterknife.
 
 \section{Integrity}
 
@@ -1038,13 +1076,11 @@ for example 3.14 and earlier kernel had often issues
 with filesystem corruption and data loss
 \footnote{\url{http://www.spinics.net/lists/linux-btrfs/msg34221.html}},
 especially when filesystem was running out of free space.
-
 The author hasn't faced any serious issues with
 3.16 kernel, but for example btrfs-progs 3.16 have
 bugs which prevent it's use in case of nested subvolumes.
 Ubuntu also has upgraded from 3.14 to 3.16 in Ubuntu 14.04,
 their last Long Term Support release.
-
 Linux 3.18 has also proven to be reliable when in comes
 to Btrfs, but for example Linux 3.19 faces
 a deadlock during an attempt to mount
@@ -1052,7 +1088,70 @@ dirty Btrfs filesystem
 \footnote{\url{http://www.reddit.com/r/linux/comments/31s042/current_stable_kernels_3194_may_fail_to_mount/}}.
 
 
+As of kernel 3.17 there is no consistent way of transferring
+differential snapshots in a distributed Git-like fashion due to way
+\texttt{btrfs receive} locates the parent subvolume.
+Whenever \texttt{btrfs send} is issued, the \texttt{uuid} of origin
+subvolume is bundled with the bitstream, that becomes
+the \texttt{received\_uuid} on the receiving endpoint and
+new \texttt{uuid} is assigned for the created subvolume.
+For incremental snapshots \texttt{btrfs send} also bundles
+the \texttt{uuid} of the parent subvolume,
+now \texttt{btrfs receive} attempts to locate the parent
+subvolume by \texttt{received\_uuid} of local subvolumes.
+
+This effectively restricts the workflow to one direction
+as shown in Figure~\ref{fig:btrfs-received-uuid-issue}.
+In other words if a full snapshot is transferred
+from machine A to B and B to C, then it is impossible
+to apply incremental snapshots from A to C, because
+\texttt{btrfs receive} is unable to locate the snapshot
+to be used as parent.
+This prevents running a downstream Butterknife server and
+even more importantly it makes tricky restoring snapshot
+in scenarios where Btrfs is used for backuping.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.5}{\input{dia/btrfs-received-uuid-issue.tex}}
+\caption{\texttt{received\_uuid} inconsistency}
+\label{fig:btrfs-received-uuid-issue}
+\end{figure}
+
+Arne Jansen, previously a Btrfs developer maintains far-progs repository
+\footnote{\url{https://www.kernel.org/pub//scm/linux/kernel/git/arne/far-progs.git}},
+which contains tools for manipulating Btrfs snapshot streams,
+this format is also known as FAR (Filesystem ARchive).
+The \texttt{btrfs-receive} from \texttt{far-progs} features
+two extra flags: \texttt{-p} which disables
+automatic parent searching and allows user to specify which 
+subvolume to use as a parent and \texttt{-d} which 
+allows specifying a custom subvolume name.
+Disabling parent search makes it possible to detach
+Btrfs' UUID mechanism and customize the differential snapshot logic.
+In this case care must be taken of snapshot consistency,
+applying differential snapshot on incorrect parent subvolume
+may cause data corruption or end up with a crash
+of \texttt{btrfs receive}.
+The changes were isolated by the author and
+submitted to \texttt{btrfs-progs} upstream.
+
+Note that current \texttt{btrfs receive} approach does not provide
+any verification of the resulting snapshot and the unique
+identifiers are simply used to look up the parent subvolume.
+Thus disabling automatic parent search and
+using the \texttt{butterknife} provided logic 
+is not necessarily inferior method.
+
+In fact far-progs repository contains \texttt{fssum}
+utility which can be used to checksum a directory.
+It checks both - file contents and attributes,
+including permissions and modification times.
+
+
+
 \section{Security}
+
 As said, Btrfs is an evolving filesystem and there
 are corner-cases where Btrfs fails security-wise.
 For example issuing \texttt{btrfs subvol list} within
@@ -1060,8 +1159,9 @@ a \texttt{chroot} exposes subvolumes outside the new root filesystem.
 
 
 For Butterknife usecase other security aspects have to be considered.
-As of \texttt{btrfs-progs} version 3.19 the \texttt{btrfs receive}
-simply replays set of opcodes
+As of \texttt{btrfs-progs} version 3.19 the \texttt{btrfs send}
+emits simply a stream of encoded opcodes
+which are intended to be replayed by \texttt{btrfs receive}
 \footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/cmds-receive.c?h=v3.19.x\#n792}}:
 create subvolume, snapshot parent subvolume,
 create file, \emph{mkdir}, \emph{mknod}, \emph{mkfifo}, symlink,
@@ -1084,7 +1184,7 @@ the \texttt{path\_cat} function is used to concatenate
 path of the subvolume and target filename.
 Investigating further reveals that no sanitization is performed on the path
 \footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/send-utils.c?h=v3.19.x\#n711}}, leaving receiving end vulnerable to path traversal attacks.
-Carefully crafted Btrfs stream for example could delete files
+Carefully crafted Btrfs stream could for example delete files
 of the running operating system rendering the whole system
 in unusable state.
 
@@ -1098,10 +1198,13 @@ This patch however confines the \texttt{btrfs receive}
 process only to the parent directory of the newly created subvolume,
 making it possible to attack other subvolumes contained in the same directory.
 The confinement could be improved even more, for example
-by parsing the opcode, performing either
+by parsing the first opcode, performing either
 subvolume creation or parent subvolume cloning,
 then issuing \texttt{chroot} to the subvolume directory
 and finally replaying the remaining opcodes.
+This would, of course make it troublesome to receive multiple
+snapshots in the same stream, as it is possible via \texttt{-e}
+flag of \texttt{btrfs send}.
 
 
 \section{Performance}
@@ -1207,7 +1310,7 @@ SSD-s however face other issues
 \begin{tikzpicture}
     \begin{axis}[xbar,width=8cm, height=14cm,
         xmin=0,xlabel={Average throughput (MB/s)},
-        symbolic y coords={xz on Celeron-J1800,pxz on Celeron-J1800,xz on i7-4770R, Fast Ethernet, bzip2 on i7-4770R, pxz on i7-4770R, gzip on Celeron-J1800, gzip on i7-4770R, btrfs receive on Samsung M9T, pigz on Celeron-J1800, btrfs send on WD10JFCX, btrfs receive on WD10JFCX, btrfs send on WD40EFRX, btrfs send on SDSSDHP256G, Gigabit Ethernet, btrfs send on SSDMCEAW240A4, pigz on i7-4770R},
+        symbolic y coords={xz on i7-4770R, Fast Ethernet, bzip2 on i7-4770R, pxz on i7-4770R, gzip on Celeron-J1800, gzip on i7-4770R, btrfs receive on Samsung M9T, pigz on Celeron-J1800, btrfs send on WD10JFCX, btrfs receive on WD10JFCX, btrfs send on WD40EFRX, btrfs send on SDSSDHP256G, Gigabit Ethernet, btrfs send on SSDMCEAW240A4, pigz on i7-4770R},
         nodes near coords, nodes near coords align={horizontal},
         ytick=data] 
         \addplot coordinates {
@@ -1226,8 +1329,6 @@ SSD-s however face other issues
             (10.3,bzip2 on i7-4770R)
             (10,Fast Ethernet)
             (2.6,xz on i7-4770R)           
-            (2.6,pxz on Celeron-J1800)
-            (1.3,xz on Celeron-J1800)
         };
         
     \end{axis}
@@ -1270,95 +1371,46 @@ the requirements of educational institutions.
 It significantly decreases local IT-support work,
 by reducing workstation bootstrap down to 15 minutes even for
 a regular sized classroom.
+With the addition of push/pull capabilities
+Butterknife is also becoming attractive tool
+for devops whi need to move around Linux containers.
+The addition of explicit parent flag (\texttt{-p}) on
+the receiving end also makes it easy to
+restore backups.
 
 Source code of the solution was published at GitHub
 \footnote{https://github.com/v6sa/butterknife}.
 The instructions for setting up similar infrastructure
-are provided at GitHub and are constantly being improved,
+are provided at GitHub and are constantly being improved.
+Butterknife also omits the overhead
+and complexity associated with traditional
+ISO remastering systems such as \emph{remastersys}
+\footnote{\url{https://help.ubuntu.com/community/LiveCDCustomization}},
 making it possible for virtually anyone
 to roll a customized distribution
 for particular purpose.
 
-Butterknife also omits the overhead
-and complexity associated with traditional
-ISO remastering systems such as \emph{remastersys}
-\footnote{\url{https://help.ubuntu.com/community/LiveCDCustomization}}.
 
 
-\section{Push and pull capabilities}
-
-As of kernel 3.17 there is no consistent way of transferring
-differential snapshots in a distributed Git-like fashion due to way
-\texttt{btrfs receive} locates the parent subvolume.
-Whenever \texttt{btrfs send} is issued, the \texttt{uuid} of origin
-subvolume is bundled with the bitstream, that becomes
-the \texttt{received\_uuid} on the receiving endpoint and
-new \texttt{uuid} is assigned for the created subvolume.
-For incremental snapshots \texttt{btrfs send} also bundles
-the \texttt{uuid} of the parent subvolume,
-now \texttt{btrfs receive} attempts to locate the parent
-subvolume by \texttt{received\_uuid} of local subvolumes.
-
-This effectively restricts the workflow to one direction
-as shown in Figure~\ref{fig:btrfs-received-uuid-issue}.
-This prevents running a downstream Butterknife server and
-even more importantly it makes tricky restoring snapshot
-in scenarios where Btrfs is used for backuping.
 
 
-\begin{figure}[!htb]
-\centering
-\scalebox{0.5}{\input{dia/btrfs-received-uuid-issue.tex}}
-\caption{UUID inconsistency}
-\label{fig:btrfs-received-uuid-issue}
-\end{figure}
-
-Arne Jansen, previously a Btrfs developer maintains far-progs repository
-\footnote{\url{https://www.kernel.org/pub//scm/linux/kernel/git/arne/far-progs.git}},
-which contains tools for manipulating Btrfs snapshot streams,
-this format is also known as FAR (Filesystem ARchive).
-The repository contains most notably three utilities
-\texttt{fssum}, \texttt{fardump} and modified version of \texttt{btrfs-receive}.
-The first one, \texttt{fssum} can be used to calculate checksum of a
-directory tree, making it possible to verify received snapshot,
-\texttt{fssum} also has flags to omit modification times and other information that 
-in certain context may be interpreted as noise.
-The second one \texttt{fardump} can be used to examine FAR stream contents
-in a human readable format.
-Finally the \texttt{btrfs-receive} from \texttt{far-progs} features
-two extra flags: \texttt{-p} which disables
-automatic parent searching and allows user to specify which 
-subvolume to use as a parent and \texttt{-d} which 
-allows specifying a custom subvolume name.
-
-Disabling parent search makes it possible to detach
-Btrfs' UUID mechanism and customize the differential snapshot logic.
-In this case care must be taken of snapshot consistency,
-applying differential snapshot on incorrect parent subvolume
-may cause data corruption or end up with a crash.
-
-\section{Adding BitTorrent transport}
+\section{BitTorrent integration}
 
 Currently only HTTP(S), multicast and their combinations are supported
 for initial provisioning stage.
-Multicast makes sense for scenarios where there is simultaneous
-control over multiple machines.
-OpenSSH is used for transferring snapshots between servers.
+Multicast is designed for usecases where simultaneous
+control over multiple machines is possible.
 The differential snapshots are primarily downloaded
 via HTTP(S) because coordinating multicast
 transfers with roaming laptops is a complex scenario.
-
-As getting consistent output from \texttt{btrfs send}
-is tricky it makes sense to store the incremental snapshot
-bitstreams as files and use BitTorrent to redistribute them.
-This way \texttt{received\_uuid} can be kept in sync with the origin
-
+Optionally push/pull can be performed over OpenSSH
+making Butterknife already now very flexible tool.
 
 BitTorrent is a protocol designed for \gls{p2p} file transfer.
-
-The incremental snapshots could be transferred
-using BitTorrent, distributing the load among
-nodes.
+It has potential to offload content transfer to nodes
+participating in the network as shown in
+Figure~\ref{fig:butterknife-usecase-bittorrent}.
+In this section two viable approaches are discussed.
 
 \begin{figure}[!htb]
 \centering
@@ -1368,10 +1420,27 @@ nodes.
 \end{figure}
 
 
+As getting consistent output from \texttt{btrfs send}
+is tricky it makes sense to store the snapshot
+bitstreams as files and use BitTorrent to redistribute them.
+This way \texttt{received\_uuid} can be kept in sync with the origin.
+Similarily each incremental snapshot can be stored on the
+disk and distributed as torrents.
+As full snapshots are large and consume a lot
+of disk space it makes sense for example
+keep every 100th full snapshot and apply
+incremental snapshots one by one to get
+to a desired snapshot.
+The main advantage of such approach is the overhead:
+in addition to Btrfs filesystem which already
+contains all the necessary snapshots,
+full and incremental snapshot bitstreams
+are stored as separate files.
+Additionally the step-by-step incremental
+snapshot approach defeats the whole
+purpose of using filesystem such as Btrfs.
 
-
-\section{Deep BitTorrent integration}
-
+Second approach dives into the BitTorrent specifics.
 A .torrent file contains metadata about the content in question and a
 tracker URL - that is the service which is used to discover other peers in the
 pool of participating nodes also known as swarm.
@@ -1456,20 +1525,35 @@ POSIX filesystem permissions and access control lists
 \footnote{\url{http://users.suse.com/~agruen/acl/linux-acls/online/}}.
 
 This leads us to believe that these properties be transferred
-using additional manifest file, making use of .torrent file redundant.
+using additional manifest file generated by eg \texttt{fssum},
+making use of .torrent file redundant.
+In fact Google Summer of Code 2015 project was submitted by
+Carnegie Mellon University graduate student Harshad Shirwadkar
+\footnote{\url{http://harshadjs.github.io/2015/03/27/Fedora-BTRFS-Content-Storage-Mode/}}
+to implement content based storage in Btrfs
+\footnote{\url{https://btrfs.wiki.kernel.org/index.php/Project_ideas\#Content_based_storage}}.
 
 \section{Alternative filesystem layouts}
 
 Lennart Poettering, an controversial Free Software developer has outlined a method
 \footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}
 of building Linux based systems using Btrfs snapshots.
-The new layout requires significant effort from operating system distributors,
+The new layout splits high level components of software
+(operating system, desktop environment, frameworks, office suit)
+into separate subvolumes which can be upgraded independently.
+This requires significant effort from operating system distributors,
 software suite vendors but promises significant save of effort on testing
 software on Linux based systems.
 Most notably a snapshot naming scheme is proposed in the article,
 which would permit mixing operating system files with different
-sets of libraries, frameworks and applications.
+sets of libraries, frameworks and applications which
+in fact was used to derive the Butterknife naming scheme.
 
+
+
+\url{https://archive.fosdem.org/2012/schedule/event/699/130_Presentation_Safe-Upgrade.pdf}
+
+\url{https://blog.feabhas.com/wp-content/uploads/2014/11/Writing-a-Linux-Update-Mechanism.pdf}
 
 %
 %

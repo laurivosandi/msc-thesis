@@ -200,6 +200,10 @@ or networking device or generally speaking node.
 The client periodically polls Chef server latest policy and
 state of the network. If anything on the node is out of date,
 the client brings it up to date. 
+
+\cite{linuxmag-7841}
+
+
 \footnote{\url{https://www.chef.io/chef/}}.
 
 Ansible remote management software uses SSH to connect to the nodes which
@@ -309,6 +313,10 @@ With copy-on-write and de-duplicating filesystems such as Btrfs and
 ZFS the problem how ever becomes irrelevant as root
 filesystem of the chroots can be duplicated with no significant overhead.
 
+\cite{chris-mason-the-btrfs-filesystem}
+
+
+
 \gls{lxc}
 \footnote{\url{https://linuxcontainers.org/}}
 takes advantage of the \emph{chroot} syscall and
@@ -350,10 +358,9 @@ Snappy uses OverlayFS (?) to implement transactional updates.
 \subsection{OverlayFS}
 
 OverlayFS is a feature introduced in Linux 3.18 which makes it
-possible to merge contents of two separate mountpoints on the fly.
+possible to merge contents of two separate mountpoints on the fly. \cite{overlayfs}
 OpenWrt uses OverlayFS to implement writable JFFS2 layer on top of
-read-only SquashFS filesystem
-\footnote{https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt}.
+read-only SquashFS filesystem. 
 
 \subsection{LVM, mdadm and dmraid}
 
@@ -373,8 +380,9 @@ an abstraction layer on top of physcal disks. Any filesystem that
 can be deployed on physical disk can also be deployed on top of
 LVM's logical volume. The kernel takes care of mapping logical
 addresses to corresponding disk's physical address.
-The snapshotting feature of LVM however has been claimed to be buggy
-\footnote{http://lwn.net/Articles/522073/}.
+The snapshotting feature of LVM however has been claimed to be buggy.
+\cite{fedora-and-lvm}
+
 
 \subsection{Btrfs and ZFS}
 
@@ -390,8 +398,7 @@ for enterprise applications
 \footnote{\url{http://article.gmane.org/gmane.comp.file-systems.btrfs/30420}}.
 
 Btrfs supports redundancy in RAID0/1/10 configurations and
-RAID5/6 support was added with Linux 3.19
-\footnote{http://lkml.iu.edu/hypermail/linux/kernel/1412.1/03583.html}.
+RAID5/6 support was added with Linux 3.19. \cite{btrfs-for-3.19}
 Btrfs supports zlib and lzo compression algorithms,
 however enabling compression for Btrfs is known to
 seriously hamper performance of database engines.
@@ -556,13 +563,16 @@ which is highly-efficient compressed read-only filesystem that
 supports variety of compression algorithms.
 The read-write overlay partition
 is formatted as JFFS2 (journalling flash filesystem).
-
+b
 This method makes it possible to: perform factory reset simply by
 formatting the JFFS2 partition and upgrading firmware by overwriting
 SquashFS partition. Due to lack of redundancy in consumer-grade routers
 an interrupted firmware upgrade usually renders device unfit for use.
 This is also known as \emph{bricking} in embedded developer jargon.
 
+\cite{building-murphy-compatible-embedded-linux-systems}
+\cite{safe-upgrade-of-embedded-systems}
+\cite{software-update-scheme-by-airwaves}
 
 \subsection{Android}
 
@@ -813,6 +823,9 @@ upgrading Linux-based workstations, while remaining flexible enough
 to be used to deploy any Linux-based operating system
 and to be used in conjunction with already existing
 configuration management tools such as Puppet and Salt.
+Butterknife brings additional value to already existing
+ecosystem and gaps between ISO-based Linux distribution
+and Puppet managed machines.
 
 \clearpage
 
@@ -822,29 +835,82 @@ configuration management tools such as Puppet and Salt.
 The prototype draws inspiration from embedded computers
 where certain guarantees have to be provided.
 Butterknife makes use of Btrfs filesystem and Linux Containers.
-The workflow of the prototype is split into
+Current architecture of Butterknife provides
+atomic updates of root filesystem.
+
+The template preparation workflow for
+Ubuntu based distribution and Puppet based configuration
+management is shown in
+Figure~\ref{fig:template-preparation-workflow}:
+LXC is used to bootstrap a container,
+\texttt{apt-get update} is used to update package lists,
+\texttt{puppet apply} is used to apply configuration on the container,
+\texttt{apt-get upgrade} is used to upgrade the packages and
+\texttt{apt-get autoremove} is used to remove packages that were installed as dependencies
+for packages removed by Puppet.
+Finally \texttt{butterknife lxc release} is used to stop
+the container and create a snapshot of the root filesystem of the container.
+For subsequent releases the cycle starts again with \texttt{apt-get update}.
+The Butterknife does not confine user to Puppet or Ubuntu,
+LXC supports a variety of distributions and scripts for
+Salt persistence are included in the template overlay
+directory of Butterknife Git repository.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.6}{\input{dia/template-preparation-workflow.tex}}
+\caption{Template preparation workflow using Butterknife}
+\label{fig:template-preparation-workflow}
+\end{figure}
+
+The deployment workflow of the prototype is split into
 bootstrap and live stages as shown in
 Figure~\ref{fig:butterknife-workflow}.
+The template prepared in the template preparation workflow
+is served by \texttt{butterknife serve}.
+Provisioning image is booted either via
+\gls{pxe} or from USB memory stick.
+Provisioning utility
+partitions the target machine storage device,
+creates Btrfs filesystem and
+transfers full snapshot of the template via HTTP.
+Target subvolume is mounted at \texttt{/mnt/target}
+and post-installation tasks, for example
+bootloader installation, are performed.
 
-A template of computer's
-is prepared in a Linux Container
+Finally the provisioning utility reboots the machine
+and system boots from the newly received subvolume.
+Butterknife DBus service starts up and
+connects to the Butterknife server waiting for
+subsequent snapshots.
+Once new snapshots are available,
+DBus service fetches the differential snapshots and
+adds them to the Btrfs pool.
+Snapshot is optionally verified and post-installation
+scripts are executed.
+User is notified about requirement to reboot the
+machine to new snapshot via the DBus notification service.
+For subsequent snapshots the cycle repeats.
 
 
 \begin{figure}[!htb]
 \centering
 \scalebox{0.6}{\input{dia/workflow.tex}}
-\caption{Workflow for Btrfs snapshot based software deployment}
+\caption{Butterknife deployment workflow}
 \label{fig:butterknife-workflow}
 \end{figure}
 
-\noindent The prototype consists of four major components:
+
+
+\noindent Butterknife consists of four major components:
 
 \begin{enumerate}
-\item Helpers to build a template.
-\item Python based HTTP API to serve the snapshots.
+\item Template helpers
+\item Command-line utility.
 \item Buildroot based provisioning image.
 \item DBus services for applying incremental snapshots online.
 \end{enumerate}
+
 
 \clearpage
 
@@ -859,10 +925,13 @@ to take advantage of already existing configuration management know-how.
 Otherwise traditional manual labour can be employed
 to set up the template: installing packages, tweaking configuration files etc.
 
-During the release phase the LXC container is stopped, pre-release
-scripts are executed to clean up package cache and temporary files.
+During the release phase the LXC container is stopped,
+pre-release scripts placed under \texttt{/etc/butterknife/pre-deploy.d}
+are executed to clean up package cache and temporary files.
 Then a read-only Btrfs snapshot is generated from the container root filesystem.
-At this point new snapshot becomes available via HTTP \gls{api}.
+At this point new snapshot becomes available via running instance of
+\texttt{butterknife serve}
+Post-deploy scripts are placed under \texttt{/etc/butterknife/post-deploy.d}.
 
 
 \clearpage
@@ -870,11 +939,23 @@ At this point new snapshot becomes available via HTTP \gls{api}.
 \section{Command-line utility}
 
 The command-line utility is mainly targeted for
-advanced use-cases 
+advanced use-cases:
+pushing-pulling snapshots via SSH,
+pulling snapshots via HTTP(S) or multicast,
+serving snapshots via HTTP or multicast.
+The utility also provides interfacing with
+LXC to prepare the templates and
+support for systemd-nspawn
+is planned. \cite{systemd-nspawn}
 
-Falcon HTTP API from Rackspace was used to build the
-API for Butterknife server
-\footnote{\url{http://falconframework.org/}}.
+
+The Python programming is done in object-oriented manner,
+thus adding additional transport methods is trivial.
+Falcon HTTP API framework
+\footnote{\url{http://falconframework.org/}}
+from Rackspace was used to build the
+HTTP API portion of the Butterknife to serve
+snapshots over HTTP.
 The HTTP API serves information about templates
 available in the server's \emph{/var/butterknife/pool}.
 The API exposes several methods:
@@ -934,8 +1015,8 @@ All the other nodes are receiving over multicast
 \section{Provisioning image}
 
 The provisioning image was designed to bootstrap a machine.
-Using Debian, Ubuntu, Gentoo and Buildroot were evaluated as
-provisioning utility operating system.
+Debian, Ubuntu, Gentoo and Buildroot were evaluated as
+provisioning platforms.
 With Debian and Ubuntu the resulting PXE bootable
 image would have exceeded 100MB, as the image
 is uncompressed to RAM, booting on machines with
@@ -949,14 +1030,16 @@ and
 files required to boot over PXE are correspondingly 24MB and 117MB.
 With Gentoo significant tweaking was required, because Gentoo is
 mainly targeted for power users.
-Buildroot was eventually used to generate an (<15MB)
+Buildroot
+an embedded Linux system build system
+was eventually used to generate an (<15MB)
 all-in-one PXE-bootable image as well as ISO image
-which can be dumped on a USB memory stick.
+which can be dumped on a USB memory stick. \cite{tools-for-embedded-linux-dev}
 
 Using Python to build pseudo-graphic menu-driven user interface was
 evaluated and deemed not necessary for the goal as Python runtime and
 dependant libraries add about 10MB to the resulting image.
-In addition to that \texttt{parted} Python bindings were unavailable
+Additionally \texttt{parted} Python bindings were unavailable
 in Buildroot package selection.
 Instead \texttt{dialog} in conjunction with
 \texttt{curl}, \texttt{jq} and others were used to build the user-interface
@@ -972,10 +1055,12 @@ The security model for the initial deployment phase could be improved
 as only method of verification of the source is the certificate
 authority chain verified by \emph{curl} during the Btrfs snapshot
 retrieval. For multicast transfers there is no security
-enforced by software.
+enforced by software, it is assumed that multicast is used only
+in protected LAN segments.
 
 The used partitioning scheme is described in Figure~\ref{fig:pooled-partitioning}
 is inspired by Ubuntu and Lennart Poettering's article.
+\cite{revisiting-how-we-put-together-linux-systems}
 The whole block device is allocated to single Btrfs filesystem
 which is mounted at \texttt{/var/butterknife/pool} making
 it possible to easily iterate over templates and root filesystem instances
@@ -1037,27 +1122,33 @@ about available updates.
 \label{chap:eval}
 In order to show that our basic approach in Butterknife is practical and
 and extendible for large-scale applications such as unrolling
-updates for smartphones or other embedded devices.
+updates for smartphones, automotive applications or other embedded devices.
 
-TODO
+Butterknife also omits the overhead
+and complexity associated with traditional
+ISO remastering systems such as \emph{remastersys}
+\footnote{\url{https://help.ubuntu.com/community/LiveCDCustomization}},
+making it possible for virtually anyone
+to roll a customized distribution
+for particular purpose.
 
-Using Butterknife it is easy to bundle proprietary components
+Butterknfie also makes it easier to
+bundle proprietary components
 into the template, thus setting up APT repository to distribute
-packages for the workstation is not necessary.
+packages for the targets is not necessary.
 
 \clearpage
 
 \section{Feedback}
 
 Butterknife service users, local IT-support in this case
-was generally satisfied with the delivery.
+were generally satisfied with the delivery.
 Reinstallation of classroom or conversion to dual-boot,
 wasn't anymore necessarily a task that had to
 be strictly scheduled for school holidays.
 Butterknife-based upgrade from Ubuntu 12.04 to
 Ubuntu 14.04 was performed within first
 half of a day at Mahtra.
-
 
 Butterknife project users, fellow devops in this case
 were also positively surprised by the
@@ -1074,7 +1165,7 @@ Due to this there are certain corner-cases where
 Btrfs may fail horribly,
 for example 3.14 and earlier kernel had often issues
 with filesystem corruption and data loss
-\footnote{\url{http://www.spinics.net/lists/linux-btrfs/msg34221.html}},
+\cite{btrfs-corruption},
 especially when filesystem was running out of free space.
 The author hasn't faced any serious issues with
 3.16 kernel, but for example btrfs-progs 3.16 have
@@ -1086,6 +1177,7 @@ to Btrfs, but for example Linux 3.19 faces
 a deadlock during an attempt to mount
 dirty Btrfs filesystem
 \footnote{\url{http://www.reddit.com/r/linux/comments/31s042/current_stable_kernels_3194_may_fail_to_mount/}}.
+
 
 
 As of kernel 3.17 there is no consistent way of transferring
@@ -1144,9 +1236,11 @@ using the \texttt{butterknife} provided logic
 is not necessarily inferior method.
 
 In fact far-progs repository contains \texttt{fssum}
-utility which can be used to checksum a directory.
+utility which can be used to checksum a directory tree.
 It checks both - file contents and attributes,
 including permissions and modification times.
+This information could be for example signed by GPG
+in the developer machine and 
 
 
 
@@ -1186,7 +1280,10 @@ Investigating further reveals that no sanitization is performed on the path
 \footnote{\url{http://git.kernel.org/cgit/linux/kernel/git/kdave/btrfs-progs.git/tree/send-utils.c?h=v3.19.x\#n711}}, leaving receiving end vulnerable to path traversal attacks.
 Carefully crafted Btrfs stream could for example delete files
 of the running operating system rendering the whole system
-in unusable state.
+in unusable state, or even worse substitute for example
+Puppet configuration and certificate authority file in the
+Butterknife persistent subvolume making it possible for a third party
+to gain access over the machine.
 
 Several \texttt{btrfs-progs} patches were submitted to improve
 the security of \texttt{btrfs receive}.
@@ -1270,8 +1367,8 @@ The source and destination directories were
 mounted as \texttt{tmpfs} on the same 
 machine to exclude the
 HDD/SDD and network effects on the test.
-In addition to single-threaded \texttt{gzip} and 
-The parallel version of \texttt{gzip} algorithm,
+In addition to single-threaded \texttt{gzip}
+the parallel version of \texttt{gzip} algorithm,
 \texttt{pigz} is included in the results as well as \texttt{pxz}
 the parallel version of \texttt{xz}.
 \\
@@ -1382,16 +1479,6 @@ Source code of the solution was published at GitHub
 \footnote{https://github.com/v6sa/butterknife}.
 The instructions for setting up similar infrastructure
 are provided at GitHub and are constantly being improved.
-Butterknife also omits the overhead
-and complexity associated with traditional
-ISO remastering systems such as \emph{remastersys}
-\footnote{\url{https://help.ubuntu.com/community/LiveCDCustomization}},
-making it possible for virtually anyone
-to roll a customized distribution
-for particular purpose.
-
-
-
 
 
 \section{BitTorrent integration}
@@ -1536,7 +1623,7 @@ to implement content based storage in Btrfs
 \section{Alternative filesystem layouts}
 
 Lennart Poettering, an controversial Free Software developer has outlined a method
-\footnote{http://0pointer.net/blog/revisiting-how-we-put-together-linux-systems.html}
+\cite{revisiting-how-we-put-together-linux-systems}
 of building Linux based systems using Btrfs snapshots.
 The new layout splits high level components of software
 (operating system, desktop environment, frameworks, office suit)
@@ -1551,9 +1638,6 @@ in fact was used to derive the Butterknife naming scheme.
 
 
 
-\url{https://archive.fosdem.org/2012/schedule/event/699/130_Presentation_Safe-Upgrade.pdf}
-
-\url{https://blog.feabhas.com/wp-content/uploads/2014/11/Writing-a-Linux-Update-Mechanism.pdf}
 
 %
 %
@@ -1563,6 +1647,7 @@ in fact was used to derive the Butterknife naming scheme.
 
 \appendix
 
+\bibliography{references}
 
 \clearpage
 \twocolumn

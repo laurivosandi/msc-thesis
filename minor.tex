@@ -16,6 +16,14 @@
 
 \section{Introduction}
 
+Can you take control over your IT with open-source tools?
+
+empowerment literature
+economic 
+localization
+marketing hype
+economic interest of other to make it more complicated than it is
+
 Up to now Linux-based operating system deployment has been
 error prone, time-consuming process and usually specific to
 a particular distribution of Linux.
@@ -38,18 +46,15 @@ of the solution and related services are discussed.
 
 \section{Background}
 
-
-Between 1995-2005 (?) Estonia rapidly developed
-from poor soviet country to an advanced paperless e-society.
-As part of Tiger Leap program schools procured PC-s and
+Tiger's Leap (Tiigrihüpe) was a program announced
+by president Lennart Meri in 1996 with the plan to heavily invest
+in computers and network infrastructure in Estonia.
+As part of Tiger Leap program schools procured IBM PC-s and
 other equipment.
-
-
-In 200? various e-services were unrolled for schools such as
-eKool which is used to keep track of student attendance.
-For 2016 Estonian Educational Network has planned major
-backbone upgrades which will bring gigabit connectivity to each
-Estonian school.
+As part of Look@World (Vaata Maailma) program
+various web applications were unrolled for schools such as
+eKool (e-school) in 2002 which is used to keep track of student attendance.
+This transformed a soviet country into an advanced paperless e-society.
 
 It is common for western IT corporations to offer products
 and services for developing countries at sub-nominal prices in order
@@ -70,7 +75,7 @@ from current 6 EUR to 60 EUR per month per machine.
 According to Ernst \& Young analysis Tallinn could save 490 000 EUR
 within five years if they would give up Microsoft Office now.
 Replacing Windows with Linux would save additional 210 000 EUR.
-\footnote{asdasds}
+\cite{ernst-young-report}
 This was the main motivation for Tallinn Education Department to try
 out alternatives. As change from Microsoft Office to LibreOffice was
 certain, replacing operating system was more questionable.
@@ -109,16 +114,7 @@ strategic control of e-Governance applications and systems
 
 Thus, there is interest on political level, but due to lack
 of technical competence contradicting decisions are made.
-For example EU mandates that all governmental documents to
-be accessible in open formats, but at the same time
-various EU bodies distribute PDF forms which
-embed XFA forms and such PDF files are currently not
-usable by any open-source tool, forcing the computer
-user to fall back to Adobe Reader.
-This problem was faced on several occation while
-carrying out the migration.
-This is a classic example of vendor lock-in and
-it could be avoided, especially in public sector.
+
 
 
 \section{Challenge}
@@ -179,6 +175,49 @@ use open standards such as web instead of relying on
 proprietary technologies such as Adobe Flash or
 Windows-only binaries paving way to BYOD.
 
+\section{Roadblocks}
+
+The project team was aware that there will be problems,
+but many of the problems were unanticipated.
+
+For example EU mandates that all governmental documents to
+be accessible in open formats, but at the same time
+various EU bodies distribute PDF forms which
+embed XFA forms and such PDF files are currently not
+usable by any open-source tool, forcing the computer
+user to fall back to Adobe Reader.
+This problem was faced on several occasion while
+carrying out the migration.
+This is a classic example of vendor lock-in and
+it could be avoided, especially in public sector.
+
+Many computer users, especially of older generation
+had grown accustomed to 
+Microsoft Office and found it frustrating
+if certain functionality was exposed
+via different menu structure.
+Also some of the materials prepared on Microsoft Office,
+fail to display properly due to proprietary fonts
+bundled with Windows.
+As Google faced similar issues on Google Chromebooks,
+they've created substitute fonts which can also be installed
+on Ubuntu machines \cite{substituting-fonts}.
+
+The warmest reception of Ubuntu and LibreOffice
+was met at one of the kindergardens where the computers were
+introduced as part of the project.
+Also the younger generation was able to handle
+different environment much better,
+probably due to the fact that smartphones
+are already very different and for them Ubuntu
+is just yet another slightly different user interface.
+
+The long term solution would be to use web-based
+workflow-specific applications (in contrast
+to generic word processing).
+For 2016 Estonian Educational Network has planned major
+backbone upgrades which will bring gigabit connectivity to each
+Estonian school.
 
 
 \section{Transforming experience into services}
@@ -254,12 +293,16 @@ authentication.
 \subsection{ownCloud}
 
 ownCloud
-\footnote{\url{https://owncloud.org/}}
 is an open-source project which implements
 Dropbox functionality to large extent.
-It has German roots and it's distributed under AGPLv3 license,
-making it possible to be installed on customer premises
-guaranteeing the privacy and security.
+Unlike Dropbox, ownCloud can be deployed
+on company's or trusted service provider's servers
+seamlessly integrating with existing infrastructure
+\cite{deploying-owncloud}.
+The ownCloud business model is built around selling
+enterprise version of ownCloud which has more features
+such as Shibboleth authentication which is used by universities.
+\cite{owncloud-closes-2.5-million-usd}
 There are synchronization clients available
 Ubuntu, Windows, Mac OS X, Android and iPhone
 making it possible to easily share photos and documents within
@@ -289,8 +332,7 @@ to cater various needs.
 Cost to redevelop Linux kernel is estimated to be
 approximately \$ 1.4 billion, which is still a fraction
 of the development cost of a whole distribution such as Ubuntu
-\footnote{\url{
-http://www.linuxfoundation.org/sites/main/files/publications/estimatinglinux.html}}.
+\cite{estimating-cost-of-linux-distro}.
 The components are free for use for businesses, governments and
 private use, but attention has to be paid to the rights
 and obligations implied by a particular license.
@@ -298,9 +340,17 @@ and obligations implied by a particular license.
 There still is very much confusion regarding open-source licenses
 and even recognized brands fail to follow the conditions.
 For example in VMware was sued in Germany for failure to comply with GPL
-\footnote{\url{https://sfconservancy.org/news/2015/mar/05/vmware-lawsuit/}} in March of 2015.
+\cite{vmware-sued} in March of 2015.
 In the past GPL has proven to be effective in court protecting
 the authors of the open-source components.
+
+EU has recognized the need to fund open-source projects
+mainly due to privacy and security concerns
+\cite{eu-should-finance-open-source}.
+
+The companies are starting to see 
+software as expense instead of competitive advantage.
+\url{http://digitark.ee/eesti-telekom-annab-arisektorile-suunatud-tarkvara-vabakasutusse/}
 
 
 AVALIKU TEABE SEADUS

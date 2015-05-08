@@ -1,3 +1,4 @@
+thesis.pdf
 *.swp
 *.autosave
 
@@ -68,6 +69,7 @@
 *.glg
 *.glo
 *.gls
+*.glsdefs
 
 # hyperref
 *.brf

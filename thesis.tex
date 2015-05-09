@@ -21,6 +21,7 @@
 \hypersetup{bookmarksnumbered=true}
 \hypersetup{colorlinks=false}
 \usepackage[toc,acronym]{glossaries}
+\pgfplotsset{compat=1.11}
 
 %% Listings
 \usepackage{listings}
@@ -28,18 +29,10 @@
 \lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
 \lstset{keywordstyle=\color{teal}\bfseries}
 
-
 %% Other
 \usepackage{enumerate}
 \usepackage{paralist}
-
 \usepackage{relsize}
-
-
-%% COMMENTS %%
-\newcommand{\TODO}[1]{\begingroup\def\thefootnote{\textcolor{red}{TODO}}\footnote{\textcolor{red}{#1}}\endgroup}
-\newcommand{\TODOP}[1]{\par\textcolor{red}{#1}\marginpar{\textcolor{red}{TODO}}}
-\newcommand{\TODOX}[1]{\textcolor{red}{#1}\marginpar{\textcolor{red}{TODO}}}
 
 \hyphenation{Butterknife}
 
@@ -139,6 +132,11 @@ to learn and build anything imaginable.
 \chapter{Introduction}
 \label{chap:intro}
 
+Linux is an operating system kernel
+developed by Linus Torvalds \cite{linux-a-portable-operating-system}
+and initially released in 1991.
+Linux in conjunction with userspace utilities
+such as GNU \cite{free-software-free-society} is also known as GNU/Linux.
 Linux-based operating systems are widely used in servers.
 Linux-based Android exceeded 85% smartphone
 market share in 2014
@@ -243,10 +241,7 @@ The Chef client is installed on each server, virtual machine, container
 or networking device or generally speaking node.
 The client periodically polls Chef server latest policy and
 state of the network. If anything on the node is out of date,
-the client brings it up to date.
-
-\cite{linuxmag-7841}
-
+the client brings it up to date \cite{linuxmag-7841}.
 
 \footnote{\url{https://www.chef.io/chef/}}.
 
@@ -692,14 +687,15 @@ The Glance \acrshort{api} does not however address versioning
 of disk and container images, therefore differential
 updates of images are also not implemented.
 
+
 %
 %
 % BACKGROUND
 %
 %
+
 \chapter{Background}
 \label{chap:bgr}
-
 
 \section{Initial task}
 
@@ -1572,9 +1568,6 @@ dirty \acrshort{btrfs} filesystem
 \chapter{Conclusions and Future Work}
 \label{chap:conc}
 
-TODO
-
-
 
 \section{Conclusions}
 
@@ -1641,8 +1634,8 @@ Optionally push/pull can be performed over \acrshort{ssh}
 making Butterknife already now very flexible tool.
 
 BitTorrent is a \acrfull{p2p} file sharing protocol
-designed by Bram Cohen. BitTorrent is designed to
-facilitate file transfers among multiple peers
+designed by Bram Cohen \cite{incentives-build-robustness-in-bittorrent}.
+BitTorrent is designed to facilitate file transfers among multiple peers
 across unreliable networks.
 It has potential to offload content transfer to nodes
 participating in the network as shown in

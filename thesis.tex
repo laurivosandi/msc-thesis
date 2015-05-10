@@ -21,7 +21,6 @@
 \hypersetup{bookmarksnumbered=true}
 \hypersetup{colorlinks=false}
 \usepackage[toc,acronym]{glossaries}
-\pgfplotsset{compat=1.11}
 
 %% Listings
 \usepackage{listings}
@@ -839,39 +838,28 @@ Considering the needs of the commercial customers and
 experience gained in the first iteration of the migration project
 following list of requirements were derived for next iteration.
 
-\begin{enumerate}
-\item The solution has to support all major Linux distributions -- Ubuntu, Fedora, Red Hat, etc.
-\item The software upgrades have to be atomic, in other words interrupted updates can not render a workstation unusable.
-\item Software upgrades must retain domain join without having to join machine to a domain.
-\item The home directories must remain intact during software updates.
-\end{enumerate}
+Firstly the solution has to support all major Linux distributions
+-- Ubuntu, Fedora, Red Hat, etc.
+The software upgrades have to be atomic, in other words
+interrupted updates can not render a workstation unusable.
+Software upgrades must retain domain join without having
+to join machine to a domain.
+The home directories must remain intact during software updates.
+It has to be possible to perform provisioning stage
+from \acrfull{pxe},
+off bootable USB memory sticks and optionally CD-R discs.
 
-\noindent Following requirements were specified for the provisioning stage.
 
-\begin{enumerate}
-\item \acrfull{pxe} support
-\item Bootable off USB memory stick
-\item Bootable off CD-R
-\end{enumerate}
+It has to be possible to run a central server for all nodes.
+It has to be possible to run a local instance.
+Push and pull capabilities to transfer templates between servers.
 
-\noindent Following requirements were specified for the server:
-
-\begin{enumerate}
-\item It has to be possible to run a central server for all nodes
-\item It has to be possible to run a local instance
-\item Push and pull capabilities to transfer templates between servers
-\end{enumerate}
-
-\noindent Following requirements were specified for security:
-
-\begin{enumerate}
-\item As initial provisioning can be assumed to be done on premises,
+Following requirements were specified for security:
+As initial provisioning can be assumed to be done on premises,
 man-in-the-middle attacks can be ruled out in that
 provisioning stage.
-\item It has to be possible to verify subsequent incremental snapshots by means of asymmetric keys.
-\item Consistent methods for root filesystem template fingerprinting have to be provided
-\end{enumerate}
-
+It has to be possible to verify subsequent incremental snapshots by means of asymmetric keys.
+Consistent methods for root filesystem template fingerprinting have to be provided
 
 %
 %

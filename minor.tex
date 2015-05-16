@@ -55,7 +55,7 @@ other equipment.
 As part of Look@World (Vaata Maailma) program
 various web applications were unrolled for schools such as
 eKool (e-school) in 2002 which is used to keep track of student attendance.
-This transformed a soviet country into an advanced paperless e-society.
+This transformed Estonia into an advanced paperless e-society.
 
 It is common for software vendors to offer products for
 educational institutions for sub-nominal prices or even for free
@@ -72,14 +72,15 @@ user fustration etc.
 %Most often organizations submit to paying
 %licensing fees at significantly higher prices due to increased
 %user discontent because of switch.
+
 Starting from the end of 2013 Microsoft does not consider Estonia a
 developing country anymore. The implication of the change was that
 the Microsoft Windows and Microsoft Office license fees would rise
 from current 6 EUR to 60 EUR per month per machine.
 According to Ernst and Young analysis Tallinn could save 490 000 EUR
 within five years if they would give up Microsoft Office now.
-Replacing Windows with Linux would save additional 210 000 EUR.
-\cite{ernst-young-report}
+Replacing Windows with Linux would save additional 210 000 EUR
+\cite{ernst-young-report}.
 
 This was the main motivation for Tallinn Education Department to try
 out alternatives. As change from Microsoft Office to LibreOffice was
@@ -106,7 +107,7 @@ remote management or centralized authentication.
 
 In addition to financial aspects, the privacy concerns rised by
 Edward Snowden in 2011
-\footnote{bla}
+\cite{edward-snowden-revelations}
 pushed various governments to seek for alternatives
 to relying on proprietary technology.
 For instance use of Windows 8 has been banned in German governmental agencies
@@ -159,14 +160,12 @@ system unusable.
 \end{figure}
 
 Initially OpenLDAP was chosen for authentication and authorization,
-but later we switched to Samba4 in order to provide bette
+but later we switched to Samba4 in order to provide better
 interoperability with Windows workstations.
-In fact Samba4 implements Microsoft Active Directory functionality
+In fact Samba implements Microsoft Active Directory functionality
 to large extent,
 making it possible to avoid licensing fees while still maintaining
-compatibility with Windows workstations wihout
-significant work required to configure OpenLDAP and Kerberos to
-work in tandem to provide authentication for Windows machines.
+compatibility with Windows workstations.
 
 As a side effect we discovered that schools were in fact
 using outdated workflows, such as composing documents using
@@ -342,7 +341,7 @@ private use, but attention has to be paid to the rights
 and obligations implied by a particular license.
 
 There still is very much confusion regarding open-source licenses
-and even recognized brands fail to follow the conditions.
+and even known brands fail to follow the conditions.
 For example in VMware was sued in Germany for failure to comply with GPL
 \cite{vmware-sued} in March of 2015.
 In the past GPL has proven to be effective in court protecting
@@ -353,8 +352,8 @@ mainly due to privacy and security concerns
 \cite{eu-should-finance-open-source}.
 
 The companies are starting to see 
-software as expense instead of competitive advantage.
-\url{http://digitark.ee/eesti-telekom-annab-arisektorile-suunatud-tarkvara-vabakasutusse/}
+software as expense instead of competitive advantage
+\cite{eesti-telekom-annab-arisektorile-suunatud-tarkvara-vabakasutusse}
 
 
 AVALIKU TEABE SEADUS
@@ -437,6 +436,8 @@ equipment to work}.
 
 
 \appendix
+
+\clearpage
 
 \bibliographystyle{plain}
 \bibliography{references}
